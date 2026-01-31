@@ -2,44 +2,18 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import {
+  SheetState,
+  PhysicalBuild,
+  WoundEntry,
+  SkillBonus,
+  SkillName,
+  CharacterEntry,
+  SkillBonuses,
+  SkillCatalog,
+} from "@/lib/types";
 
-type SheetState = {
-  resilienceCurrent: number;
-  resilienceMax: number;
-  resilienceReserves: number;
-  actionPoints: number;
-  wardCurrent: number;
-  physicalBuild: PhysicalBuild;
-  stats: {
-    phy: number;
-    vit: number;
-    sen: number;
-    wil: number;
-    acu: number;
-    pre: number;
-  };
-  moveSpeed: number;
-  wounds: WoundEntry[];
-  skills: SkillBonuses;
-};
-
-type PhysicalBuild = "Lithe" | "Average" | "Hulking";
-
-type WoundTier = "Trivial" | "Light" | "Medium" | "Heavy" | "Bleeding";
-
-type WoundEntry = {
-  id: string;
-  name: string;
-  tier: WoundTier;
-  severity: number;
-};
-
-type SkillBonus = {
-  flat: number;
-  bonusDice: string;
-};
-
-const skillCatalog = [
+const skillCatalog: SkillCatalog = [
   { name: "Acrobatics", ability: "Physicality" },
   { name: "Alchemy", ability: "Acuity" },
   { name: "Animal Handling", ability: "Sense or Presence" },
@@ -87,16 +61,7 @@ const skillCatalog = [
   { name: "Tracking", ability: "Sense" },
   { name: "Traps", ability: "Finesse or Acuity" },
   { name: "Weaving", ability: "Finesse" },
-] as const;
-
-type SkillName = (typeof skillCatalog)[number]["name"];
-
-type SkillBonuses = Record<SkillName, SkillBonus>;
-
-type CharacterEntry = {
-  id: string;
-  name: string;
-};
+];
 
 const characters: CharacterEntry[] = [
   { id: "elric", name: "Elric" },
@@ -161,9 +126,9 @@ const woundDefinitions = {
 } as const;
 
 const getWoundId = () =>
-  (typeof crypto !== "undefined" && "randomUUID" in crypto
+  typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const createWound = (name: string): WoundEntry => {
   const definition = woundDefinitions[name as keyof typeof woundDefinitions];
@@ -209,7 +174,9 @@ const normalizeSkills = (skills: SheetState["skills"] | undefined) => {
   return next;
 };
 
-const normalizePhysicalBuild = (value: SheetState["physicalBuild"] | undefined) => {
+const normalizePhysicalBuild = (
+  value: SheetState["physicalBuild"] | undefined
+) => {
   if (value === "Lithe" || value === "Average" || value === "Hulking") {
     return value;
   }
@@ -273,7 +240,10 @@ const clampSheet = (sheet: SheetState): SheetState => {
     ...sheet,
     resilienceMax: derivedMax,
     resilienceCurrent: Math.min(sheet.resilienceCurrent, derivedMax),
-    resilienceReserves: Math.min(sheet.resilienceReserves, Math.floor(derivedMax / 3)),
+    resilienceReserves: Math.min(
+      sheet.resilienceReserves,
+      Math.floor(derivedMax / 3)
+    ),
   };
 };
 
@@ -648,10 +618,7 @@ export default function GMPanelPage() {
       ...prev,
       [id]: nextSheet,
     }));
-    window.localStorage.setItem(
-      getStorageKey(id),
-      JSON.stringify(nextSheet)
-    );
+    window.localStorage.setItem(getStorageKey(id), JSON.stringify(nextSheet));
     broadcastSheet(id, nextSheet);
   };
 
@@ -700,7 +667,7 @@ export default function GMPanelPage() {
               />
               <button
                 type="button"
-                onClick={() => setIsAuthorized(password === "1597Gm!@")} 
+                onClick={() => setIsAuthorized(password === "1597Gm!@")}
                 className="rounded-full border border-[#8b6a3f] bg-[#19130d] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
               >
                 Unlock
@@ -821,14 +788,16 @@ export default function GMPanelPage() {
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-3">
-                        {([
-                          ["phy", "PHY"],
-                          ["vit", "VIT"],
-                          ["sen", "SEN"],
-                          ["wil", "WIL"],
-                          ["acu", "ACU"],
-                          ["pre", "PRE"],
-                        ] as const).map(([statKey, label]) => (
+                        {(
+                          [
+                            ["phy", "PHY"],
+                            ["vit", "VIT"],
+                            ["sen", "SEN"],
+                            ["wil", "WIL"],
+                            ["acu", "ACU"],
+                            ["pre", "PRE"],
+                          ] as const
+                        ).map(([statKey, label]) => (
                           <label
                             key={statKey}
                             className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]"
@@ -859,11 +828,15 @@ export default function GMPanelPage() {
                             <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
                               Skill
                               <select
-                                value={skillSelections[character.id] ?? skillCatalog[0].name}
+                                value={
+                                  skillSelections[character.id] ??
+                                  skillCatalog[0].name
+                                }
                                 onChange={(event) =>
                                   setSkillSelections((prev) => ({
                                     ...prev,
-                                    [character.id]: event.target.value as SkillName,
+                                    [character.id]: event.target
+                                      .value as SkillName,
                                   }))
                                 }
                                 className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
@@ -929,7 +902,9 @@ export default function GMPanelPage() {
                                 {skillCatalog
                                   .filter((skill) => {
                                     const entry = sheet.skills[skill.name];
-                                    return entry.flat !== 0 || entry.bonusDice !== "";
+                                    return (
+                                      entry.flat !== 0 || entry.bonusDice !== ""
+                                    );
                                   })
                                   .map((skill) => {
                                     const entry = sheet.skills[skill.name];
@@ -947,7 +922,10 @@ export default function GMPanelPage() {
                                         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
                                           {entry.flat !== 0 && (
                                             <span className="rounded-full border border-[#5c4a33] px-2 py-1">
-                                              Flat {entry.flat > 0 ? `+${entry.flat}` : entry.flat}
+                                              Flat{" "}
+                                              {entry.flat > 0
+                                                ? `+${entry.flat}`
+                                                : entry.flat}
                                             </span>
                                           )}
                                           {entry.bonusDice !== "" && (
@@ -1025,7 +1003,9 @@ export default function GMPanelPage() {
                                 </div>
                                 <button
                                   type="button"
-                                  onClick={() => handleHealWound(character.id, index)}
+                                  onClick={() =>
+                                    handleHealWound(character.id, index)
+                                  }
                                   className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
                                 >
                                   Heal
