@@ -2,49 +2,21 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "../../lib/supabaseClient";
+import {
+  SheetState,
+  SkillBonuses,
+  SkillBonus,
+  WoundEntry,
+  PhysicalBuild,
+  SkillCatalog,
+  SkillName,
+} from "@/lib/types";
 
 type CharacterSheetProps = {
   name: string;
 };
 
-type SheetState = {
-  resilienceCurrent: number;
-  resilienceMax: number;
-  resilienceReserves: number;
-  actionPoints: number;
-  wardCurrent: number;
-  hitClass: number;
-  physicalBuild: PhysicalBuild;
-  stats: {
-    phy: number;
-    vit: number;
-    sen: number;
-    wil: number;
-    acu: number;
-    pre: number;
-  };
-  moveSpeed: number;
-  wounds: WoundEntry[];
-  skills: SkillBonuses;
-};
-
-type WoundTier = "Trivial" | "Light" | "Medium" | "Heavy" | "Bleeding";
-
-type WoundEntry = {
-  id: string;
-  name: string;
-  tier: WoundTier;
-  severity: number;
-};
-
-type SkillBonus = {
-  flat: number;
-  bonusDice: string;
-};
-
-type PhysicalBuild = "Lithe" | "Average" | "Hulking";
-
-const skillCatalog = [
+const skillCatalog: SkillCatalog = [
   { name: "Acrobatics", ability: "Physicality" },
   { name: "Alchemy", ability: "Acuity" },
   { name: "Animal Handling", ability: "Sense or Presence" },
@@ -92,11 +64,7 @@ const skillCatalog = [
   { name: "Tracking", ability: "Sense" },
   { name: "Traps", ability: "Finesse or Acuity" },
   { name: "Weaving", ability: "Finesse" },
-] as const;
-
-type SkillName = (typeof skillCatalog)[number]["name"];
-
-type SkillBonuses = Record<SkillName, SkillBonus>;
+];
 
 const woundDefinitions = {
   "Generic Trivial Wound": {
@@ -170,10 +138,7 @@ const hardcodedStatsByCharacter: Record<
   },
 };
 
-const hardcodedSkillsByCharacter: Record<
-  string,
-  Partial<SkillBonuses>
-> = {
+const hardcodedSkillsByCharacter: Record<string, Partial<SkillBonuses>> = {
   cerid: {
     Arcana: { flat: 2, bonusDice: "1d4" },
     Deception: { flat: 2, bonusDice: "1d4" },
@@ -212,9 +177,9 @@ const hardcodedSkillsByCharacter: Record<
 };
 
 const getWoundId = () =>
-  (typeof crypto !== "undefined" && "randomUUID" in crypto
+  typeof crypto !== "undefined" && "randomUUID" in crypto
     ? crypto.randomUUID()
-    : `${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
 const createWound = (name: string): WoundEntry => {
   const definition = woundDefinitions[name as keyof typeof woundDefinitions];
@@ -260,8 +225,9 @@ const normalizeSkills = (skills: SheetState["skills"] | undefined) => {
   return next;
 };
 
-const normalizePhysicalBuild = (value: SheetState["physicalBuild"] | undefined) => {
-
+const normalizePhysicalBuild = (
+  value: SheetState["physicalBuild"] | undefined
+) => {
   if (value === "Lithe" || value === "Average" || value === "Hulking") {
     return value;
   }
@@ -356,7 +322,9 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
   const [damageAmount, setDamageAmount] = useState("0");
   const [damageType, setDamageType] = useState("Physical");
   const [wardSpendAmount, setWardSpendAmount] = useState("0");
-  const channelRef = useState(() => new BroadcastChannel("character-sheet-sync"))[0];
+  const channelRef = useState(
+    () => new BroadcastChannel("character-sheet-sync")
+  )[0];
   const skipBroadcastRef = useRef(false);
   const skipSupabaseRef = useRef(false);
   const supabaseChannelRef = useRef<ReturnType<
@@ -377,10 +345,10 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
           ...defaultSheetState,
           ...parsed,
           wounds: normalizeWounds(parsed.wounds),
-          skills: {
-            ...normalizeSkills(parsed.skills),
-            ...(hardcodedSkills ?? {}),
-          },
+          // skills: {
+          //   ...normalizeSkills(parsed.skills),
+          //   ...(hardcodedSkills ?? {}),
+          // },
           physicalBuild: normalizePhysicalBuild(parsed.physicalBuild),
           stats: hardcoded?.stats ?? parsed.stats ?? defaultSheetState.stats,
           ...(hardcoded?.physicalBuild
@@ -391,20 +359,20 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
         setSheet({
           ...defaultSheetState,
           ...(hardcoded ?? {}),
-          skills: {
-            ...defaultSheetState.skills,
-            ...(hardcodedSkills ?? {}),
-          },
+          // skills: {
+          //   ...defaultSheetState.skills,
+          //   ...(hardcodedSkills ?? {}),
+          // },
         });
       }
     } else {
       setSheet({
         ...defaultSheetState,
         ...(hardcoded ?? {}),
-        skills: {
-          ...defaultSheetState.skills,
-          ...(hardcodedSkills ?? {}),
-        },
+        // skills: {
+        //   ...defaultSheetState.skills,
+        //   ...(hardcodedSkills ?? {}),
+        // },
       });
     }
   }, [storageKey]);
@@ -419,7 +387,11 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
         sheet?: SheetState;
         source?: "gm" | "character";
       };
-      if (payload?.id === characterId && payload.sheet && payload.source === "gm") {
+      if (
+        payload?.id === characterId &&
+        payload.sheet &&
+        payload.source === "gm"
+      ) {
         skipBroadcastRef.current = true;
         setSheet({
           ...defaultSheetState,
@@ -477,7 +449,11 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
   }, [characterId]);
 
   const derivedResilienceMax = useMemo(() => {
-    return getDerivedResilienceMax(sheet.stats, sheet.wounds, sheet.physicalBuild);
+    return getDerivedResilienceMax(
+      sheet.stats,
+      sheet.wounds,
+      sheet.physicalBuild
+    );
   }, [sheet.stats, sheet.wounds, sheet.physicalBuild]);
 
   const buildModifiers = useMemo(() => {
@@ -524,7 +500,10 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
         ...prev,
         resilienceMax: max,
         resilienceCurrent: Math.min(prev.resilienceCurrent, max),
-        resilienceReserves: Math.min(prev.resilienceReserves, Math.floor(max / 3)),
+        resilienceReserves: Math.min(
+          prev.resilienceReserves,
+          Math.floor(max / 3)
+        ),
       };
     });
   }, [derivedResilienceMax]);
@@ -544,7 +523,8 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
     const reservesShown = Math.max(0, Math.min(reserves, maxReserves));
     return {
       currentPercent: (currentShown / max) * 100,
-      reservesPercent: maxReserves > 0 ? (reservesShown / maxReserves) * 100 : 0,
+      reservesPercent:
+        maxReserves > 0 ? (reservesShown / maxReserves) * 100 : 0,
       maxReserves,
     };
   }, [sheet.resilienceCurrent, derivedResilienceMax, sheet.resilienceReserves]);
@@ -626,11 +606,12 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
   );
 
   const reactionPhysicalityBonus = useMemo(() => {
-    const multiplier = sheet.physicalBuild === "Lithe"
-      ? 1
-      : sheet.physicalBuild === "Average"
-        ? 0.5
-        : 0;
+    const multiplier =
+      sheet.physicalBuild === "Lithe"
+        ? 1
+        : sheet.physicalBuild === "Average"
+          ? 0.5
+          : 0;
     return Math.floor(effectivePhysicality * multiplier);
   }, [effectivePhysicality, sheet.physicalBuild]);
 
@@ -691,7 +672,10 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
   const handleResilienceIncrease = () => {
     setSheet((prev) => ({
       ...prev,
-      resilienceCurrent: Math.min(prev.resilienceCurrent + 1, derivedResilienceMax),
+      resilienceCurrent: Math.min(
+        prev.resilienceCurrent + 1,
+        derivedResilienceMax
+      ),
     }));
   };
 
@@ -735,11 +719,12 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
     const physicalTypes = ["Piercing", "Slashing", "Bludgeoning", "Cleaving"];
     const isLightPhysical =
       threshold === "Light" && physicalTypes.includes(damageType);
-    const woundName = isLightPhysical && Math.random() < 0.5
-      ? "Bleeding Gash"
-      : threshold === "Light"
-        ? "Generic Light Wound"
-        : `Generic ${threshold} Wound`;
+    const woundName =
+      isLightPhysical && Math.random() < 0.5
+        ? "Bleeding Gash"
+        : threshold === "Light"
+          ? "Generic Light Wound"
+          : `Generic ${threshold} Wound`;
 
     const newWound = createWound(woundName);
 
@@ -876,7 +861,9 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4 rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold text-[#f0e4cf]">Resilience</h2>
+              <h2 className="text-lg font-semibold text-[#f0e4cf]">
+                Resilience
+              </h2>
               <div className="flex flex-wrap items-center gap-3 text-sm text-[#b7a387]">
                 <span className="font-semibold">Current / Max</span>
                 <div className="flex items-center gap-2">
@@ -936,7 +923,8 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                   {sheet.resilienceReserves}
                 </span>
                 <span className="text-xs text-[#8b6a3f]">
-                  / {Math.floor(barState.maxReserves ?? derivedResilienceMax / 3)}
+                  /{" "}
+                  {Math.floor(barState.maxReserves ?? derivedResilienceMax / 3)}
                 </span>
                 <button
                   type="button"
@@ -995,10 +983,14 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
             <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
               {(() => {
                 const max = derivedThresholdBase;
-                const trivialMax = Math.floor(max * 0.25) + buildModifiers.thresholdBonus;
-                const lightMax = Math.floor(max * 0.5) + buildModifiers.thresholdBonus;
-                const mediumMax = Math.floor(max * 0.9) + buildModifiers.thresholdBonus;
-                const heavyMax = Math.floor(max * 1.25) + buildModifiers.thresholdBonus;
+                const trivialMax =
+                  Math.floor(max * 0.25) + buildModifiers.thresholdBonus;
+                const lightMax =
+                  Math.floor(max * 0.5) + buildModifiers.thresholdBonus;
+                const mediumMax =
+                  Math.floor(max * 0.9) + buildModifiers.thresholdBonus;
+                const heavyMax =
+                  Math.floor(max * 1.25) + buildModifiers.thresholdBonus;
                 const ranges = [
                   { label: "Trivial", range: `0-${trivialMax}` },
                   { label: "Light", range: `${trivialMax + 1}-${lightMax}` },
@@ -1086,7 +1078,6 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
               </ul>
             )}
           </div>
-
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-5 py-4">
@@ -1130,14 +1121,12 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                       {
                         name: "Repeat (Spell)",
                         cost: 2,
-                        note:
-                          "Difficulty TBD. Target repeats their last turn on their next turn.",
+                        note: "Difficulty TBD. Target repeats their last turn on their next turn.",
                       },
                       {
                         name: "Temporal Shear (Spell)",
                         cost: 2,
-                        note:
-                          "Difficulty 7. Slows time in random sections of the target’s body, dealing 3d4 cleaving damage.",
+                        note: "Difficulty 7. Slows time in random sections of the target’s body, dealing 3d4 cleaving damage.",
                       },
                     ]
                   : []),
@@ -1188,9 +1177,7 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                       1 AP
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-[#b7a387]">
-                    {reaction.note}
-                  </p>
+                  <p className="mt-2 text-sm text-[#b7a387]">{reaction.note}</p>
                 </button>
               ))}
               {name.toLowerCase() === "cerid" && (
@@ -1233,7 +1220,9 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                       type="number"
                       min={0}
                       value={wardSpendAmount}
-                      onChange={(event) => setWardSpendAmount(event.target.value)}
+                      onChange={(event) =>
+                        setWardSpendAmount(event.target.value)
+                      }
                       className="w-28 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
                       placeholder="Reduce"
                     />
@@ -1270,23 +1259,26 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                 Unarmed strikes deal 1d6 + PHY bludgeoning damage.
               </li>
               <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
-                Unarmed strikes deal 1d64 + WIL elemental damage of your choice, elemental damage can be dealt at all melee ranges.
+                Unarmed strikes deal 1d64 + WIL elemental damage of your choice,
+                elemental damage can be dealt at all melee ranges.
               </li>
               <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
-                Improved Doge: When you take the Dodge reaction, add half your Wil (as a whole number) to your Hit Class for that attack. The first doge each round costs 0 AP.
+                Improved Doge: When you take the Dodge reaction, add half your
+                Wil (as a whole number) to your Hit Class for that attack. The
+                first doge each round costs 0 AP.
               </li>
             </ul>
           ) : name.toLowerCase() === "elric" ? (
             <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
               <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
                 Smile: When you hit with a melee attack, you may deal +1d8 Fire
-                damage by spending +1 AP. Then roll a Will check against half the
-                damage rolled; on a failure, lose 1 additional AP.
+                damage by spending +1 AP. Then roll a Will check against half
+                the damage rolled; on a failure, lose 1 additional AP.
               </li>
               <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
                 Lay on Hands: Touch a creature to heal a wound by a severity
-                equal to AP spent. Roll over 5 times the severity healed or
-                lose the same amount of Resilience.
+                equal to AP spent. Roll over 5 times the severity healed or lose
+                the same amount of Resilience.
               </li>
             </ul>
           ) : name.toLowerCase() === "aled" ? (
@@ -1320,7 +1312,9 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                 const flat = entry?.flat ?? 0;
                 const bonusDice = entry?.bonusDice ?? "";
                 const buildMultiplier =
-                  buildSkillMultipliers[skill.name as keyof typeof buildSkillMultipliers];
+                  buildSkillMultipliers[
+                    skill.name as keyof typeof buildSkillMultipliers
+                  ];
                 return (
                   <li
                     key={skill.name}
@@ -1343,11 +1337,12 @@ export default function CharacterSheet({ name }: CharacterSheetProps) {
                           Bonus {bonusDice}
                         </span>
                       )}
-                      {typeof buildMultiplier === "number" && buildMultiplier !== 1 && (
-                        <span className="rounded-full border border-[#5c4a33] px-2 py-1">
-                          Build x{buildMultiplier}
-                        </span>
-                      )}
+                      {typeof buildMultiplier === "number" &&
+                        buildMultiplier !== 1 && (
+                          <span className="rounded-full border border-[#5c4a33] px-2 py-1">
+                            Build x{buildMultiplier}
+                          </span>
+                        )}
                     </div>
                   </li>
                 );

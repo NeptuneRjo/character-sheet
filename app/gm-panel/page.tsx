@@ -77,6 +77,7 @@ const defaultSheetState: SheetState = {
   resilienceReserves: 0,
   actionPoints: 4,
   wardCurrent: 0,
+  hitClass: 8,
   physicalBuild: "Average",
   stats: {
     phy: 2,

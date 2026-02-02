@@ -4,6 +4,7 @@ export type SheetState = {
   resilienceReserves: number;
   actionPoints: number;
   wardCurrent: number;
+  hitClass: number;
   physicalBuild: PhysicalBuild;
   stats: {
     phy: number;
