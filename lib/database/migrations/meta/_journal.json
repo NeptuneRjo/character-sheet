@@ -8,6 +8,20 @@
       "when": 1770014278319,
       "tag": "0000_powerful_wilson_fisk",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1770085737599,
+      "tag": "0001_chemical_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1770102574452,
+      "tag": "0002_bizarre_annihilus",
+      "breakpoints": true
     }
   ]
 }

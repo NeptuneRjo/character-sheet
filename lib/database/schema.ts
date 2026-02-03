@@ -12,6 +12,7 @@ export const character = pgTable(
     hitclass: integer(),
     physicalBuild: text("physical_build"),
     movespeed: integer(),
+    characterUID: text("character_uid").notNull().unique(),
   },
   (table) => [
     check(
@@ -81,4 +82,6 @@ export const characterSkills = pgTable("character_skills", {
   skillId: integer("skill_id")
     .notNull()
     .references(() => skills.id),
+  flatModifier: integer("flat_modifier"),
+  bonusDice: text("bonus_dice"),
 });
