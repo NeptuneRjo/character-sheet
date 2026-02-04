@@ -1,17 +1,18 @@
 import { sql } from "drizzle-orm";
 import { pgTable, text, serial, integer, check } from "drizzle-orm/pg-core";
 
-export const character = pgTable(
+export const characters = pgTable(
   "characters",
   {
     id: serial("id").primaryKey(),
-    resilienceMax: integer("resilience_max"),
-    resilienceReserves: integer("resilience_reserves"),
-    actionPoints: integer("action_points"),
-    wardCurrent: integer("ward_current"),
-    hitclass: integer(),
-    physicalBuild: text("physical_build"),
-    movespeed: integer(),
+    resilienceCurrent: integer("resilience_current").notNull().default(0),
+    resilienceMax: integer("resilience_max").notNull().default(1),
+    resilienceReserves: integer("resilience_reserves").notNull().default(1),
+    actionPoints: integer("action_points").notNull().default(4),
+    wardCurrent: integer("ward_current").notNull().default(0),
+    hitclass: integer().notNull().default(8),
+    physicalBuild: text("physical_build").notNull(),
+    movespeed: integer().notNull().default(8),
     characterUID: text("character_uid").notNull().unique(),
   },
   (table) => [
@@ -26,9 +27,9 @@ export const skills = pgTable(
   "skills",
   {
     id: serial("id").primaryKey(),
-    name: text(),
-    ability: text(),
-    utility: integer(),
+    name: text().notNull(),
+    ability: text().notNull(),
+    utility: integer().notNull().default(0),
   },
   (table) => [
     sql`${table.ability} IN ('Physicality', 'Acuity', 'Sense', 'Presence', 'Vitality')`,
@@ -39,10 +40,10 @@ export const wounds = pgTable(
   "wounds",
   {
     id: serial("id").primaryKey(),
-    name: text(),
-    tier: text(),
-    severity: integer(),
-    characterId: integer("character_id").references(() => character.id),
+    name: text().notNull(),
+    tier: text().notNull().default("Trivial"),
+    severity: integer().notNull().default(0),
+    characterId: integer("character_id").references(() => characters.id),
   },
   (table) => [
     "ck_wound_tier",
@@ -52,36 +53,36 @@ export const wounds = pgTable(
 
 export const traits = pgTable("traits", {
   id: serial("id").primaryKey(),
-  name: text(),
-  description: text(),
-  characterId: integer("character_id").references(() => character.id),
+  name: text().notNull(),
+  description: text().notNull(),
+  characterId: integer("character_id").references(() => characters.id),
 });
 
 export const equipment = pgTable("equipment", {
   id: serial("id").primaryKey(),
-  name: text(),
-  description: text(),
-  characterId: integer("character_id").references(() => character.id),
+  name: text().notNull(),
+  description: text().notNull(),
+  characterId: integer("character_id").references(() => characters.id),
 });
 
 export const stats = pgTable("stats", {
   id: serial("id").primaryKey(),
-  phy: integer(),
-  vit: integer(),
-  sen: integer(),
-  wil: integer(),
-  acu: integer(),
-  pre: integer(),
-  characterId: integer("character_id").references(() => character.id),
+  phy: integer().notNull().default(0),
+  vit: integer().notNull().default(0),
+  sen: integer().notNull().default(0),
+  wil: integer().notNull().default(0),
+  acu: integer().notNull().default(0),
+  pre: integer().notNull().default(0),
+  characterId: integer("character_id").references(() => characters.id),
 });
 
 export const characterSkills = pgTable("character_skills", {
   characterId: integer("character_id")
     .notNull()
-    .references(() => character.id),
+    .references(() => characters.id),
   skillId: integer("skill_id")
     .notNull()
     .references(() => skills.id),
-  flatModifier: integer("flat_modifier"),
-  bonusDice: text("bonus_dice"),
+  flatModifier: integer("flat_modifier").notNull().default(0),
+  bonusDice: text("bonus_dice").notNull().default("1d4"),
 });

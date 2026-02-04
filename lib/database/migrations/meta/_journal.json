@@ -22,6 +22,20 @@
       "when": 1770102574452,
       "tag": "0002_bizarre_annihilus",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1770168322231,
+      "tag": "0003_needy_xorn",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1770242493133,
+      "tag": "0004_cultured_lyja",
+      "breakpoints": true
     }
   ]
 }
