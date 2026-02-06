@@ -62,6 +62,7 @@ export const equipment = pgTable("equipment", {
   id: serial("id").primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
+  quantity: integer().notNull().default(0),
   characterId: integer("character_id").references(() => characters.id),
 });
 
