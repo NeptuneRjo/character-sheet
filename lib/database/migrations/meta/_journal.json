@@ -43,6 +43,13 @@
       "when": 1770382491793,
       "tag": "0005_grey_madrox",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1770456329268,
+      "tag": "0006_dizzy_franklin_richards",
+      "breakpoints": true
     }
   ]
 }

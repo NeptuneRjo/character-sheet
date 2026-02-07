@@ -1,18 +1,25 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, serial, integer, check } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  check,
+  smallint,
+} from "drizzle-orm/pg-core";
 
 export const characters = pgTable(
   "characters",
   {
     id: serial("id").primaryKey(),
-    resilienceCurrent: integer("resilience_current").notNull().default(0),
-    resilienceMax: integer("resilience_max").notNull().default(1),
-    resilienceReserves: integer("resilience_reserves").notNull().default(1),
-    actionPoints: integer("action_points").notNull().default(4),
-    wardCurrent: integer("ward_current").notNull().default(0),
-    hitclass: integer().notNull().default(8),
+    resilienceCurrent: smallint("resilience_current").notNull().default(0),
+    resilienceMax: smallint("resilience_max").notNull().default(1),
+    resilienceReserves: smallint("resilience_reserves").notNull().default(1),
+    actionPoints: smallint("action_points").notNull().default(4),
+    wardCurrent: smallint("ward_current").notNull().default(0),
+    hitclass: smallint().notNull().default(8),
     physicalBuild: text("physical_build").notNull(),
-    movespeed: integer().notNull().default(8),
+    movespeed: smallint().notNull().default(8),
     characterUID: text("character_uid").notNull().unique(),
   },
   (table) => [
@@ -29,7 +36,7 @@ export const skills = pgTable(
     id: serial("id").primaryKey(),
     name: text().notNull(),
     ability: text().notNull(),
-    utility: integer().notNull().default(0),
+    utility: smallint().notNull().default(0),
   },
   (table) => [
     sql`${table.ability} IN ('Physicality', 'Acuity', 'Sense', 'Presence', 'Vitality')`,
@@ -42,8 +49,10 @@ export const wounds = pgTable(
     id: serial("id").primaryKey(),
     name: text().notNull(),
     tier: text().notNull().default("Trivial"),
-    severity: integer().notNull().default(0),
-    characterId: integer("character_id").references(() => characters.id),
+    severity: smallint().notNull().default(0),
+    characterId: integer("character_id").references(() => characters.id, {
+      onDelete: "cascade",
+    }),
   },
   (table) => [
     "ck_wound_tier",
@@ -55,35 +64,41 @@ export const traits = pgTable("traits", {
   id: serial("id").primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
-  characterId: integer("character_id").references(() => characters.id),
+  characterId: integer("character_id").references(() => characters.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const equipment = pgTable("equipment", {
   id: serial("id").primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
-  quantity: integer().notNull().default(0),
-  characterId: integer("character_id").references(() => characters.id),
+  quantity: smallint().notNull().default(0),
+  characterId: integer("character_id").references(() => characters.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const stats = pgTable("stats", {
   id: serial("id").primaryKey(),
-  phy: integer().notNull().default(0),
-  vit: integer().notNull().default(0),
-  sen: integer().notNull().default(0),
-  wil: integer().notNull().default(0),
-  acu: integer().notNull().default(0),
-  pre: integer().notNull().default(0),
-  characterId: integer("character_id").references(() => characters.id),
+  phy: smallint().notNull().default(0),
+  vit: smallint().notNull().default(0),
+  sen: smallint().notNull().default(0),
+  wil: smallint().notNull().default(0),
+  acu: smallint().notNull().default(0),
+  pre: smallint().notNull().default(0),
+  characterId: integer("character_id").references(() => characters.id, {
+    onDelete: "cascade",
+  }),
 });
 
 export const characterSkills = pgTable("character_skills", {
   characterId: integer("character_id")
     .notNull()
     .references(() => characters.id),
-  skillId: integer("skill_id")
+  skillId: smallint("skill_id")
     .notNull()
     .references(() => skills.id),
-  flatModifier: integer("flat_modifier").notNull().default(0),
+  flatModifier: smallint("flat_modifier").notNull().default(0),
   bonusDice: text("bonus_dice").notNull().default("1d4"),
 });
