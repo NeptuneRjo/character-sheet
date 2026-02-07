@@ -14,7 +14,7 @@ import { eq, getTableColumns, sql } from "drizzle-orm";
 /**
  * Retrieves the list of characters.
  */
-export const getCharacters = async (): Promise<CharacterList> => {
+export const getCharacters = async (): Promise<CharacterList[]> => {
   const query = await db.select().from(characters);
   return query;
 };
@@ -25,6 +25,39 @@ export const getCharacters = async (): Promise<CharacterList> => {
 export const getCharacter = async (
   characterUID: string
 ): Promise<Character> => {
+  const traitsSubquery = db
+    .select()
+    .from(traits)
+    .where(eq(traits.characterId, characters.id))
+    .as("traits");
+  const statsSubquery = db
+    .select()
+    .from(stats)
+    .where(eq(stats.characterId, characters.id))
+    .as("stats");
+  const woundsSubquery = db
+    .select()
+    .from(wounds)
+    .where(eq(wounds.characterId, characters.id))
+    .as("wounds");
+  const equipmentSubquery = db
+    .select()
+    .from(equipment)
+    .where(eq(equipment.characterId, characters.id))
+    .as("equipment");
+  const skillsSubquery = db
+    .select({
+      skills,
+      skillId: characterSkills.skillId,
+      characterId: characterSkills.characterId,
+      flatModifier: characterSkills.flatModifier,
+      bonusDice: characterSkills.bonusDice,
+    })
+    .from(characterSkills)
+    .leftJoin(skills, eq(characterSkills.skillId, skills.id))
+    .where(eq(characterSkills.characterId, characters.id))
+    .as("skills");
+
   const query = await db
     .select({
       characters,
@@ -32,16 +65,23 @@ export const getCharacter = async (
       stats,
       wounds,
       equipment,
-      characterSkills,
-      skills,
+      skills: {
+        id: skills.id,
+        name: skills.name,
+        ability: skills.ability,
+        utility: skills.utility,
+        skillId: skillsSubquery.skillId,
+        characterId: skillsSubquery.characterId,
+        flatModifier: skillsSubquery.flatModifier,
+        bonusDice: skillsSubquery.bonusDice,
+      },
     })
     .from(characters)
-    .fullJoin(traits, eq(characters.id, traits.characterId))
-    .fullJoin(stats, eq(characters.id, stats.characterId))
-    .fullJoin(wounds, eq(characters.id, wounds.characterId))
-    .fullJoin(equipment, eq(characters.id, equipment.characterId))
-    .fullJoin(characterSkills, eq(characters.id, characterSkills.characterId))
-    .fullJoin(skills, eq(characterSkills.skillId, skills.id))
+    .leftJoinLateral(traitsSubquery, sql`true`)
+    .leftJoinLateral(statsSubquery, sql`true`)
+    .leftJoinLateral(woundsSubquery, sql`true`)
+    .leftJoinLateral(equipmentSubquery, sql`true`)
+    .leftJoinLateral(skillsSubquery, sql`true`)
     .where(eq(characters.characterUID, characterUID));
 
   type Character = typeof characters.$inferSelect;
@@ -52,31 +92,23 @@ export const getCharacter = async (
   type Skills = typeof skills.$inferSelect &
     typeof characterSkills.$inferSelect;
 
-  type FullCharacter = Omit<Character, "id"> & {
-    traits: Omit<Traits, "id" | "characterId">[];
-    stats: Omit<Stats, "id" | "characterId"> | {};
-    wounds: Omit<Wounds, "id" | "characterId">[];
-    equipment: Omit<Equipment, "id" | "characterId">[];
-    skills: Omit<Skills, "id" | "characterId" | "skillId">[];
+  type FullCharacter = Character & {
+    traits: Traits[];
+    stats: Stats | {};
+    wounds: Wounds[];
+    equipment: Equipment[];
+    skills: Skills[];
   };
 
   const result = query.reduce<FullCharacter>((acc, cv) => {
     // the objects for this iteration
-    const {
-      characters,
-      traits,
-      stats,
-      wounds,
-      equipment,
-      skills,
-      characterSkills,
-    } = cv;
+    const { characters, traits, stats, wounds, equipment, skills } = cv;
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
     if (acc["characterUID"] !== characters!.characterUID) {
-      const { id, ...rest } = characters!;
+      // const { id, ...rest } = characters!;
       acc = {
-        ...rest,
+        ...characters,
         traits: [],
         stats: {},
         wounds: [],
@@ -86,50 +118,39 @@ export const getCharacter = async (
     }
 
     if (traits) {
-      const { id, characterId, ...rest } = traits;
-
-      // I think CharacterSkills is forcing *-to-many relationships to return   twice.
-      // Maybe fixable within the query itself but I couldnt figure it out.
-      const isDupe = acc.traits.some((trait) => trait.name === traits.name);
+      const isDupe = acc.traits.some((trait) => trait.id === traits.id);
 
       if (!isDupe) {
-        acc.traits.push({ ...rest });
+        acc.traits.push(traits);
       }
     }
 
     if (stats) {
       const { id, characterId, ...rest } = stats;
-      acc.stats = { ...rest };
+      acc.stats = stats;
     }
 
     if (wounds) {
-      const { id, characterId, ...rest } = wounds;
-
-      const isDupe = acc.wounds.some((wound) => wound.name === wounds.name);
+      const isDupe = acc.wounds.some((wound) => wound.id === wounds.id);
 
       if (!isDupe) {
-        acc.wounds.push({ ...rest });
+        acc.wounds.push(wounds);
       }
     }
 
     if (equipment) {
-      const { id, characterId, ...rest } = equipment;
-
-      const isDupe = acc.equipment.some((item) => item.name === equipment.name);
+      const isDupe = acc.equipment.some((item) => item.id === equipment.id);
 
       if (!isDupe) {
-        acc.equipment.push({ ...rest });
+        acc.equipment.push(equipment);
       }
     }
 
     if (skills && characterSkills) {
-      const { id, ...rest } = skills;
-      const { bonusDice, flatModifier } = characterSkills;
-
-      const isDupe = acc.skills.some((skill) => skill.name === skills.name);
+      const isDupe = acc.skills.some((skill) => skill.id === skills.id);
 
       if (!isDupe) {
-        acc.skills.push({ bonusDice, flatModifier, ...rest });
+        acc.skills.push(skills);
       }
     }
 
