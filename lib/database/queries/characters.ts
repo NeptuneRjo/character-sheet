@@ -1,4 +1,4 @@
-import { Character, CharacterList } from "@/lib/types";
+import { CharacterList } from "@/lib/types";
 import { db } from "../index";
 import {
   characters,
@@ -11,6 +11,20 @@ import {
 } from "../schema";
 import { eq, getTableColumns, sql } from "drizzle-orm";
 
+type Character = typeof characters.$inferSelect;
+type Traits = typeof traits.$inferSelect;
+type Stats = typeof stats.$inferSelect;
+type Wounds = typeof wounds.$inferSelect;
+type Equipment = typeof equipment.$inferSelect;
+type Skills = typeof skills.$inferSelect & typeof characterSkills.$inferSelect;
+
+type FullCharacter = Character & {
+  traits: Traits[];
+  stats: Stats | {};
+  wounds: Wounds[];
+  equipment: Equipment[];
+  skills: Skills[];
+};
 /**
  * Retrieves the list of characters.
  */
@@ -24,7 +38,7 @@ export const getCharacters = async (): Promise<CharacterList[]> => {
  */
 export const getCharacter = async (
   characterUID: string
-): Promise<Character> => {
+): Promise<FullCharacter> => {
   const traitsSubquery = db
     .select()
     .from(traits)
@@ -84,22 +98,6 @@ export const getCharacter = async (
     .leftJoinLateral(skillsSubquery, sql`true`)
     .where(eq(characters.characterUID, characterUID));
 
-  type Character = typeof characters.$inferSelect;
-  type Traits = typeof traits.$inferSelect;
-  type Stats = typeof stats.$inferSelect;
-  type Wounds = typeof wounds.$inferSelect;
-  type Equipment = typeof equipment.$inferSelect;
-  type Skills = typeof skills.$inferSelect &
-    typeof characterSkills.$inferSelect;
-
-  type FullCharacter = Character & {
-    traits: Traits[];
-    stats: Stats | {};
-    wounds: Wounds[];
-    equipment: Equipment[];
-    skills: Skills[];
-  };
-
   const result = query.reduce<FullCharacter>((acc, cv) => {
     // the objects for this iteration
     const { characters, traits, stats, wounds, equipment, skills } = cv;
@@ -126,7 +124,6 @@ export const getCharacter = async (
     }
 
     if (stats) {
-      const { id, characterId, ...rest } = stats;
       acc.stats = stats;
     }
 
@@ -157,7 +154,7 @@ export const getCharacter = async (
     return acc;
   }, {} as any);
 
-  return result as any;
+  return result;
 };
 
 /**
