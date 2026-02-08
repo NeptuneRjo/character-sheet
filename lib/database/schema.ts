@@ -20,6 +20,7 @@ export const characters = pgTable(
     hitclass: smallint().notNull().default(8),
     physicalBuild: text("physical_build").notNull(),
     movespeed: smallint().notNull().default(8),
+    name: text().notNull().default("john"),
     characterUID: text("character_uid").notNull().unique(),
   },
   (table) => [
@@ -95,10 +96,10 @@ export const stats = pgTable("stats", {
 export const characterSkills = pgTable("character_skills", {
   characterId: integer("character_id")
     .notNull()
-    .references(() => characters.id),
+    .references(() => characters.id, { onDelete: "cascade" }),
   skillId: smallint("skill_id")
     .notNull()
-    .references(() => skills.id),
+    .references(() => skills.id, { onDelete: "cascade" }),
   flatModifier: smallint("flat_modifier").notNull().default(0),
   bonusDice: text("bonus_dice").notNull().default("1d4"),
 });

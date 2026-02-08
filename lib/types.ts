@@ -28,6 +28,7 @@ export type Character = {
   hitclass: number;
   characterUID: string;
   movespeed: number;
+  name: string;
   physicalBuild: PhysicalBuild;
   stats: Stats;
   wounds: Wound[];
