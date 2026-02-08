@@ -11,10 +11,9 @@ export async function GET(
   let response: Character | CharacterList[];
 
   try {
-    if (slug[0]) {
+    if (slug) {
       const query = await getCharacter(slug[0]);
       response = query as Character;
-      // response = await getCharacter(slug[0]);
     } else {
       response = await getCharacters();
     }
