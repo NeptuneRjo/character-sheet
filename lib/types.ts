@@ -1,100 +1,66 @@
-export type SheetState = {
-  resilienceCurrent: number;
-  resilienceMax: number;
-  resilienceReserves: number;
-  actionPoints: number;
-  wardCurrent: number;
-  hitClass: number;
-  physicalBuild: PhysicalBuild;
-  stats: {
-    phy: number;
-    vit: number;
-    sen: number;
-    wil: number;
-    acu: number;
-    pre: number;
-  };
-  moveSpeed: number;
-  wounds: WoundEntry[];
-  skills: SkillBonuses;
-};
+import * as schema from "./database/schema";
 
-export type Character = {
-  resilienceCurrent: number;
-  resilienceMax: number;
-  resilienceReserves: number;
-  actionPoints: number;
-  wardCurrent: number;
-  hitclass: number;
-  characterUID: string;
-  movespeed: number;
-  name: string;
-  physicalBuild: PhysicalBuild;
-  stats: Stats;
-  wounds: Wound[];
-  skills: Skills[];
+export type Character = typeof schema.characters.$inferSelect;
+export type Wound = typeof schema.wounds.$inferSelect;
+export type Trait = typeof schema.traits.$inferSelect;
+export type Skill = typeof schema.skills.$inferSelect;
+export type Equipment = typeof schema.equipment.$inferSelect;
+export type Stats = typeof schema.stats.$inferSelect;
+export type CharacterSkill = Skill & typeof schema.characterSkills.$inferSelect;
+
+export type Sheet = Character & {
   traits: Trait[];
+  stats: Stats | {};
+  wounds: Wound[];
+  equipment: Equipment[];
+  skills: CharacterSkill[];
 };
 
-export type CharacterList = Omit<
-  Character,
-  "stats" | "wounds" | "skills" | "traits"
->;
+export type InsCharacter = typeof schema.characters.$inferInsert;
+export type InsWound = typeof schema.wounds.$inferInsert;
+export type InsTrait = typeof schema.traits.$inferInsert;
+export type InsSkill = typeof schema.skills.$inferInsert;
+export type InsEquipment = typeof schema.equipment.$inferInsert;
+export type InsStats = typeof schema.equipment.$inferInsert;
+export type InsCharacterSkill = typeof schema.characterSkills.$inferInsert;
 
-export type Skills = {
-  name: string;
-  ability: string;
-  flatModifier: number;
-  bonusDice: string;
-  utility: number;
+const physicalBuilds = ["Lithe", "Average", "Hulking"] as const;
+export type PhysicalBuild = (typeof physicalBuilds)[number];
+
+export type BuildModifiers = {
+  hitclassBonus: number;
+  movespeedBonus: number;
+  thresholdBonus: number;
+  woundPointBonus: number;
+  carryMultiplier: number;
+  grappleDefense: number;
+  grappleOffense: number;
+  force: number;
 };
 
-export type Stats = {
-  phy: number;
-  vit: number;
-  sen: number;
-  wil: number;
-  acu: number;
-  pre: number;
+const damageThresholds = [
+  "Trivial",
+  "Light",
+  "Medium",
+  "Heavy",
+  "Deadly",
+] as const;
+export type DamageThresholds = (typeof damageThresholds)[number];
+
+const physicalDamageTypes = [
+  "Piercing",
+  "Slashing",
+  "Bludgeoning",
+  "Cleaving",
+] as const;
+export type PhysicalDamageTypes = (typeof physicalDamageTypes)[number];
+
+export type CurrentEffect = {
+  label: string;
+  detail: string;
 };
 
-export type Trait = {
-  name: string;
-  description: string;
+export type CurrentPenalties = {
+  movementPenalty: number;
+  statPenalty: number;
 };
-
-export type PhysicalBuild = string | "Lithe" | "Average" | "Hulking";
-
-export type WoundTier = "Trivial" | "Light" | "Medium" | "Heavy" | "Bleeding";
-
-export type Wound = {
-  name: string;
-  tier: WoundTier;
-  severity: number;
-};
-
-export type WoundEntry = {
-  id: string;
-  name: string;
-  tier: WoundTier;
-  severity: number;
-};
-
-export type SkillBonus = {
-  flat: number;
-  bonusDice: string;
-};
-
-export type CharacterEntry = {
-  id: string;
-  name: string;
-};
-
-export type SkillCatalog = {
-  name: string;
-  ability: string;
-}[];
-
-export type SkillName = SkillCatalog[number]["name"];
-
-export type SkillBonuses = Record<SkillName, SkillBonus>;
