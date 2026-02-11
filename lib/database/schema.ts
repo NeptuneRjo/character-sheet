@@ -105,6 +105,7 @@ export const characterSkills = pgTable("character_skills", {
 });
 
 export const actions = pgTable("actions", {
+  id: serial("id").primaryKey(),
   characterId: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
@@ -115,6 +116,7 @@ export const actions = pgTable("actions", {
 });
 
 export const reactions = pgTable("reactions", {
+  id: serial("id").primaryKey(),
   characterId: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
