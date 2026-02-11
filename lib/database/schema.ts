@@ -16,7 +16,7 @@ export const characters = pgTable(
     resilienceMax: smallint("resilience_max").notNull().default(1),
     resilienceReserves: smallint("resilience_reserves").notNull().default(1),
     actionPoints: smallint("action_points").notNull().default(4),
-    wardCurrent: smallint("ward_current").notNull().default(0),
+    wardCurrent: smallint("ward_current"),
     hitclass: smallint().notNull().default(8),
     physicalBuild: text("physical_build").notNull(),
     movespeed: smallint().notNull().default(8),
@@ -57,7 +57,7 @@ export const wounds = pgTable(
   },
   (table) => [
     "ck_wound_tier",
-    sql`${table.tier} IN ('Trivial', 'Light', 'Medium', 'Heavy', 'Bleeding')`,
+    sql`${table.tier} IN ('Trivial', 'Light', 'Medium', 'Heavy', 'Deadly')`,
   ]
 );
 
@@ -102,4 +102,24 @@ export const characterSkills = pgTable("character_skills", {
     .references(() => skills.id, { onDelete: "cascade" }),
   flatModifier: smallint("flat_modifier").notNull().default(0),
   bonusDice: text("bonus_dice").notNull().default("1d4"),
+});
+
+export const actions = pgTable("actions", {
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  name: text().notNull(),
+  cost: smallint().notNull().default(1),
+  note: text(),
+  difficulty: smallint(),
+});
+
+export const reactions = pgTable("reactions", {
+  characterId: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  name: text().notNull(),
+  cost: smallint().notNull().default(1),
+  note: text(),
+  difficulty: smallint(),
 });
