@@ -71,6 +71,13 @@
       "when": 1770797714473,
       "tag": "0009_wild_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771034965838,
+      "tag": "0010_great_stepford_cuckoos",
+      "breakpoints": true
     }
   ]
 }
