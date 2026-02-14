@@ -1,19 +1,19 @@
 import { getCharacter, getCharacters } from "@/lib/database/queries";
-import { Character, CharacterList } from "@/lib/types";
+import { Character, Sheet } from "@/lib/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  let response: Character | CharacterList[];
+  let response: Sheet | Character[];
 
   try {
     if (slug) {
       const query = await getCharacter(slug[0]);
-      response = query as Character;
+      response = query;
     } else {
       response = await getCharacters();
     }
