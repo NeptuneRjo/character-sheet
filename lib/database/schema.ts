@@ -6,6 +6,7 @@ import {
   integer,
   check,
   smallint,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const characters = pgTable(
@@ -16,11 +17,12 @@ export const characters = pgTable(
     resilienceMax: smallint("resilience_max").notNull().default(1),
     resilienceReserves: smallint("resilience_reserves").notNull().default(1),
     actionPoints: smallint("action_points").notNull().default(4),
-    wardCurrent: smallint("ward_current"),
+    wardCurrent: smallint("ward_current").notNull().default(0),
     hitclass: smallint().notNull().default(8),
     physicalBuild: text("physical_build").notNull(),
     movespeed: smallint().notNull().default(8),
     name: text().notNull().default("john"),
+    isCaster: boolean().notNull().default(false),
     characterUID: text("character_uid").notNull().unique(),
   },
   (table) => [
