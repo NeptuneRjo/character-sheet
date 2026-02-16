@@ -23,7 +23,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const getCharacter = async (characterUID: string) => {
-    fetch(`/api/character/${characterUID}`)
+    fetch(`/api/characters/${characterUID}`)
       .then((res) => res.json())
       .then((data) => {
         setCharacter(data);
