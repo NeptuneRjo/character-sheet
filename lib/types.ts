@@ -61,6 +61,13 @@ const damageThresholdTypes = [
 export const DamageThresholdTypes = damageThresholdTypes as readonly string[];
 export type DamageThresholds = (typeof damageThresholdTypes)[number];
 
+export type DamageMaxes = {
+  trivialMax: number;
+  lightMax: number;
+  mediumMax: number;
+  heavyMax: number;
+};
+
 const physicalDamageTypes = [
   "Piercing",
   "Slashing",
@@ -116,4 +123,24 @@ export type SheetContextType = {
   isLoading: boolean;
   setCharacter: Dispatch<SetStateAction<Sheet | null>>;
   getCharacter: (characterUID: string) => Promise<void>;
+  modifiers: {
+    penalties: CurrentPenalties | null;
+    maxResilience: number;
+    maxReserves: number;
+    buildModifiers: BuildModifiers;
+    effectivePhysicality: number;
+    reactionPhysicalityBonus: number;
+    maxWard: number;
+    effectiveMoveSpeed: number;
+    carryCapacityKg: number;
+    hitClass: number;
+  };
+  handlers: {
+    handleSpendAp: (cost: number) => void;
+    handleSpendWard: (cost: number) => void;
+    handleRefillWard: () => void;
+    handleResilienceDecrease: () => void;
+    handleResilienceIncrease: (value?: number) => void;
+    handleReservesIncrease: (value?: number) => void;
+  };
 };
