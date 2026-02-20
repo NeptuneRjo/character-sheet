@@ -1,45 +1,20 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { PhysicalBuilds } from "@/lib/types";
-import {
-  getEffectivePhysicality,
-  getPenalties,
-  getReactionPhysicalityBonus,
-  getWardMax,
-  spendAP,
-} from "@/lib/utils";
 import { useContext, useState } from "react";
 
 const Reactions = () => {
-  const { character, isLoading, setCharacter } = useContext(SheetContext);
+  const { character, isLoading, handlers, modifiers } =
+    useContext(SheetContext);
   const [wardSpendAmount, setWardSpendAmount] = useState<number>(0);
 
   if (!character || isLoading) {
     return <div>Loading...</div>;
   }
 
-  const {
-    stats,
-    resilienceMax,
-    resilienceCurrent,
-    physicalBuild,
-    reactions,
-    wardCurrent,
-    isCaster,
-    actionPoints,
-  } = character;
-
-  const wardMax = getWardMax(stats.wil);
-  const penalties = getPenalties(resilienceMax, resilienceCurrent);
-  const effectivePhysicality = getEffectivePhysicality(
-    stats.phy,
-    penalties.statPenalty
-  );
-  const reactionPhysicalityBonus = getReactionPhysicalityBonus(
-    physicalBuild as PhysicalBuilds,
-    effectivePhysicality
-  );
+  const { reactions, wardCurrent, isCaster } = character;
+  const { maxWard, reactionPhysicalityBonus } = modifiers;
+  const { handleRefillWard, handleSpendAp, handleSpendWard } = handlers;
 
   const defaultReactions = [
     {
@@ -54,47 +29,6 @@ const Reactions = () => {
     },
   ];
 
-  const handleSpendApCost = (cost: number) => {
-    if (cost <= 0) {
-      return;
-    }
-
-    const { nextAp, nextResilience } = spendAP(
-      cost,
-      actionPoints,
-      resilienceCurrent
-    );
-
-    setCharacter({
-      ...character,
-      resilienceCurrent: nextResilience,
-      actionPoints: nextAp,
-    });
-  };
-
-  const handleSpendWardCost = (cost: number) => {
-    // const amount = Number(wardSpendAmount);
-    if (Number.isNaN(cost) || cost <= 0) {
-      return;
-    }
-    setCharacter({
-      ...character,
-      wardCurrent: Math.min(0, wardCurrent - cost),
-    });
-    // setSheet((prev) => ({
-    //   ...prev,
-    //   wardCurrent: Math.max(0, prev.wardCurrent - amount),
-    // }));
-  };
-
-  const handleRefillWard = () => {
-    // setSheet((prev) => ({
-    //   ...prev,
-    //   wardCurrent: Math.min(wardMax, 20),
-    // }));
-    setCharacter({ ...character, wardCurrent: Math.min(wardMax, 20) });
-  };
-
   return (
     <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-5 py-4">
       <h2 className="text-lg font-semibold text-[#f0e4cf]">Reactions</h2>
@@ -103,7 +37,7 @@ const Reactions = () => {
           <button
             key={key}
             type="button"
-            onClick={() => handleSpendApCost(cost)}
+            onClick={() => handleSpendAp(cost)}
             className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
           >
             <div className="flex items-center justify-between">
@@ -119,7 +53,7 @@ const Reactions = () => {
           <button
             key={key}
             type="button"
-            onClick={() => handleSpendApCost(cost)}
+            onClick={() => handleSpendAp(cost)}
             className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
           >
             <div className="flex items-center justify-between">
@@ -143,28 +77,24 @@ const Reactions = () => {
               Difficulty 8
             </p>
             <p className="mt-2 text-sm text-[#b7a387]">
-              Track your ward points (max {wardMax}).
+              Track your ward points (max {maxWard}).
             </p>
             <div className="mt-3 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => {
-                  handleSpendApCost(2);
+                  handleSpendAp(2);
                   handleRefillWard();
-                  // setSheet((prev) => ({
-                  //   ...prev,
-                  //   wardCurrent: Math.min(wardMax, 20),
-                  // }));
                 }}
                 className="rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
               >
                 Ward to 20
               </button>
               <span className="text-lg font-semibold text-[#f0d9a8]">
-                {Math.min(wardCurrent, wardMax)}
+                {maxWard && Math.min(wardCurrent, maxWard)}
               </span>
               <span className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-                / {wardMax}
+                / {maxWard}
               </span>
             </div>
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -181,15 +111,7 @@ const Reactions = () => {
               <button
                 type="button"
                 onClick={() => {
-                  handleSpendWardCost(wardSpendAmount);
-                  // const amount = Number(wardSpendAmount);
-                  // if (Number.isNaN(amount) || amount <= 0) {
-                  //   return;
-                  // }
-                  // setSheet((prev) => ({
-                  //   ...prev,
-                  //   wardCurrent: Math.max(0, prev.wardCurrent - amount),
-                  // }));
+                  handleSpendWard(wardSpendAmount);
                 }}
                 className="rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
               >

@@ -1,25 +1,25 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { PhysicalBuilds } from "@/lib/types";
-import { derivedThreshholdBase, getBuildModifiers } from "@/lib/utils";
 import { useContext } from "react";
 
 const DamageThresholds = () => {
-  const { character, isLoading } = useContext(SheetContext);
+  const { character, isLoading, modifiers } = useContext(SheetContext);
 
   if (!character || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { physicalBuild, stats } = character;
+  const { buildModifiers, maxResilience } = modifiers;
 
-  const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
-  const max = derivedThreshholdBase(stats);
-  const trivialMax = Math.floor(max * 0.25) + buildModifiers.thresholdBonus;
-  const lightMax = Math.floor(max * 0.5) + buildModifiers.thresholdBonus;
-  const mediumMax = Math.floor(max * 0.9) + buildModifiers.thresholdBonus;
-  const heavyMax = Math.floor(max * 1.25) + buildModifiers.thresholdBonus;
+  const trivialMax =
+    Math.floor(maxResilience * 0.25) + buildModifiers.thresholdBonus;
+  const lightMax =
+    Math.floor(maxResilience * 0.5) + buildModifiers.thresholdBonus;
+  const mediumMax =
+    Math.floor(maxResilience * 0.9) + buildModifiers.thresholdBonus;
+  const heavyMax =
+    Math.floor(maxResilience * 1.25) + buildModifiers.thresholdBonus;
   const ranges = [
     { label: "Trivial", range: `0-${trivialMax}` },
     { label: "Light", range: `${trivialMax + 1}-${lightMax}` },

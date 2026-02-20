@@ -19,8 +19,11 @@ const Traits = () => {
         <p className="mt-2 text-sm text-[#b7a387]">None listed.</p>
       ) : (
         <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
-          {traits.map((trait) => (
-            <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
+          {traits.map((trait, key) => (
+            <li
+              className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2"
+              key={key}
+            >
               {trait.name}: {trait.description}
             </li>
           ))}

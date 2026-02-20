@@ -1,11 +1,10 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { getPenalties } from "@/lib/utils";
 import { useContext } from "react";
 
 const Stats = () => {
-  const { character, isLoading } = useContext(SheetContext);
+  const { character, isLoading, modifiers } = useContext(SheetContext);
   const labels = (stat: string) => {
     switch (stat.toLowerCase()) {
       case "phy":
@@ -27,7 +26,8 @@ const Stats = () => {
     return <div>loading...</div>;
   }
 
-  const { resilienceCurrent, resilienceMax, stats } = character;
+  const { stats } = character;
+  const { penalties } = modifiers;
 
   const shouldDisplayStat = (stat: string) => {
     return !(
@@ -39,9 +39,9 @@ const Stats = () => {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {Object.entries(stats).map(([stat, value], key) => (
-        <>
-          {shouldDisplayStat(stat) && value !== null && (
+      {Object.entries(stats).map(([stat, value], key) => {
+        if (shouldDisplayStat(stat) && value !== null) {
+          return (
             <div
               key={key}
               className="flex items-center justify-between rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-5 py-4"
@@ -55,16 +55,12 @@ const Stats = () => {
                 </p>
               </div>
               <div className="text-2xl font-semibold text-[#f0d9a8]">
-                {Math.max(
-                  -2,
-                  value -
-                    getPenalties(resilienceMax, resilienceCurrent).statPenalty
-                )}
+                {penalties && Math.max(-2, value - penalties.statPenalty)}
               </div>
             </div>
-          )}
-        </>
-      ))}
+          );
+        }
+      })}
     </div>
   );
 };

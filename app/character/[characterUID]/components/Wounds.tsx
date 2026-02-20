@@ -13,27 +13,24 @@ import {
 import { useContext, useState } from "react";
 
 const Wounds = () => {
-  const { character, isLoading, setCharacter } = useContext(SheetContext);
+  const { character, isLoading, setCharacter, modifiers } =
+    useContext(SheetContext);
 
   const [damageAmount, setDamageAmount] = useState("0");
   const [damageType, setDamageType] = useState("Physical");
 
-  if (isLoading) {
-    return <div>Loading...</div>;
+  if (!character || isLoading) {
+    return <div>loading...</div>;
   }
 
-  if (!character) {
-    return <div>No character found...</div>;
-  }
-
-  const { wounds, stats, physicalBuild, characterUID, resilienceCurrent } =
-    character;
+  const { wounds, stats, characterUID, resilienceCurrent } = character;
+  const { buildModifiers } = modifiers;
 
   const handleApplyDamage = () => {
     const damageValue = Number(damageAmount);
     if (Number.isNaN(damageValue)) return;
 
-    const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
+    // const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
     const max = derivedThreshholdBase(stats);
     const threshold = getDamageThreshold(
       max,
@@ -69,7 +66,7 @@ const Wounds = () => {
         setCharacter({
           ...character,
           wounds: [...character.wounds, data],
-          resilienceMax: newMax,
+          // resilienceMax: newMax,
           resilienceCurrent: newCurrent,
         });
       });
@@ -116,7 +113,6 @@ const Wounds = () => {
     setCharacter({
       ...character,
       wounds,
-      resilienceMax: maxResilience,
       resilienceCurrent: Math.min(
         resilienceCurrent + severityDelta,
         maxResilience

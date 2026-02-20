@@ -1,58 +1,19 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { Action, PhysicalBuilds, Sheet } from "@/lib/types";
-import {
-  getBuildModifiers,
-  getEffectiveMoveSpeed,
-  getPenalties,
-  spendAP,
-} from "@/lib/utils";
 import { useContext } from "react";
 
 const Actions = () => {
-  const { character, isLoading, setCharacter } = useContext(SheetContext);
+  const { character, isLoading, modifiers, handlers } =
+    useContext(SheetContext);
 
   if (!character || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { actionPoints, resilienceCurrent, actions } = character;
-
-  const buildModifers = getBuildModifiers(
-    character.physicalBuild as PhysicalBuilds
-  );
-  const penalties = getPenalties(
-    character.resilienceMax,
-    character.resilienceCurrent
-  );
-  const effectiveMoveSpeed = getEffectiveMoveSpeed(
-    character.movespeed,
-    buildModifers.movespeedBonus,
-    penalties.movementPenalty
-  );
-
-  const handleSpendAp = () => {
-    handleSpendApCost(1);
-  };
-
-  const handleSpendApCost = (cost: number) => {
-    if (cost <= 0) {
-      return;
-    }
-
-    const { nextAp, nextResilience } = spendAP(
-      cost,
-      actionPoints,
-      resilienceCurrent
-    );
-
-    setCharacter({
-      ...character,
-      resilienceCurrent: nextResilience,
-      actionPoints: nextAp,
-    });
-  };
+  const { actionPoints, actions } = character;
+  const { effectiveMoveSpeed } = modifiers;
+  const { handleSpendAp } = handlers;
 
   const defaultActions = [
     { name: `Move (${effectiveMoveSpeed}m)`, cost: 1 },
@@ -68,7 +29,7 @@ const Actions = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleSpendAp}
+            onClick={() => handleSpendAp(1)}
             className="h-7 w-7 rounded-full border border-[#5c4a33] bg-[#19130d] text-[#f0d9a8]"
             aria-label="Spend action point"
           >
@@ -97,7 +58,7 @@ const Actions = () => {
           <button
             key={key}
             type="button"
-            onClick={() => handleSpendApCost(action.cost)}
+            onClick={() => handleSpendAp(action.cost)}
             className="flex items-center justify-between rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
           >
             <div>
@@ -112,7 +73,7 @@ const Actions = () => {
           <button
             key={key}
             type="button"
-            onClick={() => handleSpendApCost(action.cost)}
+            onClick={() => handleSpendAp(action.cost)}
             className="flex items-center justify-between rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
           >
             <div>

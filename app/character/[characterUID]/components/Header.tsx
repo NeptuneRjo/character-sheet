@@ -1,24 +1,17 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { Character, PhysicalBuilds, Stats } from "@/lib/types";
-import { getBuildModifiers } from "@/lib/utils";
-import { useContext, useMemo } from "react";
+import { useContext } from "react";
 
 const Header = () => {
-  const { character, isLoading, setCharacter } = useContext(SheetContext);
+  const { character, isLoading, modifiers } = useContext(SheetContext);
 
   if (!character || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { name, hitclass, physicalBuild, stats } = character;
-
-  const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
-  const carryCapacityKg = useMemo(() => {
-    const base = 20 + stats.phy * 10;
-    return Math.max(0, Math.round(base * buildModifiers.carryMultiplier));
-  }, [stats.phy, buildModifiers.carryMultiplier]);
+  const { name, physicalBuild } = character;
+  const { carryCapacityKg, hitClass } = modifiers;
 
   return (
     <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -35,7 +28,7 @@ const Header = () => {
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Hit Class
           </p>
-          <p className="text-lg font-semibold text-[#f0d9a8]">{hitclass}</p>
+          <p className="text-lg font-semibold text-[#f0d9a8]">{hitClass}</p>
         </div>
         <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-4 py-3 text-right">
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
