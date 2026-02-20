@@ -88,9 +88,7 @@ const Resilience = () => {
           <span className="rounded-full border border-[#8b6a3f] px-3 py-1 text-xs font-semibold text-[#f0d9a8]">
             {resilienceReserves}
           </span>
-          <span className="text-xs text-[#8b6a3f]">
-            / {Math.floor(barState.maxReserves ?? maxResilience / 3)}
-          </span>
+          <span className="text-xs text-[#8b6a3f]">/ {maxReserves}</span>
           <button
             type="button"
             onClick={() => handleReservesIncrease()}
