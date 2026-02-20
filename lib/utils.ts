@@ -49,7 +49,7 @@ export const getBuildModifiers = (build: PhysicalBuilds): BuildModifiers => {
 };
 
 export const getTotalSeverity = (wounds: Wound[]) =>
-  wounds.reduce((total, wound) => total + wound.severity, 0);
+  Array.from(wounds).reduce((total, wound) => total + wound.severity, 0);
 
 export const getPenalties = (resMax: number, resCurrent: number) => {
   let movementPenalty = 0;
@@ -203,9 +203,10 @@ export const getIncreasedReserves = (
 
 export const getIncreasedResilience = (
   resilienceCurrent: number,
-  resilienceMax: number
+  resilienceMax: number,
+  amount: number = 1
 ) => {
-  return Math.min(resilienceCurrent + 1, resilienceMax);
+  return Math.min(resilienceCurrent + amount, resilienceMax);
 };
 
 export const getResilienceReserves = (
@@ -283,7 +284,8 @@ export const getBarColorClass = (
 export const getBarState = (
   maxResilience: number,
   resilienceCurrent: number,
-  resilienceReserves: number
+  resilienceReserves: number,
+  maxReserves: number
 ) => {
   if (maxResilience <= 0) {
     return {
@@ -291,7 +293,6 @@ export const getBarState = (
       reservesPercent: 0,
     };
   }
-  const maxReserves = maxResilience / 3;
   const currentShown = Math.max(0, Math.min(resilienceCurrent, maxResilience));
   const reservesShown = Math.max(0, Math.min(resilienceReserves, maxReserves));
   return {
