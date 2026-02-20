@@ -246,6 +246,11 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     if (!character || !maxResilience) {
       return;
     }
+
+    if (character.resilienceReserves >= maxReserves) {
+      return;
+    }
+
     const increasedReserves = getIncreasedReserves(
       character.resilienceReserves,
       maxResilience
