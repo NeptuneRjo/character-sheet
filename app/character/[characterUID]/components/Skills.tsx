@@ -15,6 +15,17 @@ const Skills = () => {
   const { physicalBuild, skills } = character;
   const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
 
+  const hasBuildModifier = (skillName: string) => {
+    let normalizedSkillName = skillName.replace(" ", "").toLowerCase();
+
+    for (let key in buildModifiers) {
+      if (Object.hasOwn(buildModifiers, key)) {
+        if (key.toLowerCase() === normalizedSkillName) return true;
+      }
+    }
+    return false;
+  };
+
   return (
     <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-5">
       <h3 className="text-lg font-semibold text-[#f0e4cf]">Skills</h3>
@@ -44,7 +55,7 @@ const Skills = () => {
                   <span className="rounded-full border border-[#5c4a33] px-2 py-1">
                     Bonus {bonusDice}
                   </span>
-                  {buildModifiers[name as keyof BuildModifiers] !== 1 && (
+                  {hasBuildModifier(name) && (
                     <span className="rounded-full border border-[#5c4a33] px-2 py-1">
                       Build x{buildModifiers[name as keyof BuildModifiers]}
                     </span>
