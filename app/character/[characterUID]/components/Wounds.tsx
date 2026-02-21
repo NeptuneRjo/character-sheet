@@ -1,20 +1,10 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { PhysicalBuilds, PostWoundBody, Wound } from "@/lib/types";
-import {
-  derivedThreshholdBase,
-  getBuildModifiers,
-  getDamageThreshold,
-  getDerivedResilience,
-  getDerivedResilienceMax,
-  getHealedWound,
-} from "@/lib/utils";
 import { useContext, useState } from "react";
 
 const Wounds = () => {
-  const { character, isLoading, setCharacter, modifiers } =
-    useContext(SheetContext);
+  const { character, isLoading, handlers } = useContext(SheetContext);
 
   const [damageAmount, setDamageAmount] = useState("0");
   const [damageType, setDamageType] = useState("Physical");
@@ -23,102 +13,8 @@ const Wounds = () => {
     return <div>loading...</div>;
   }
 
-  const { wounds, stats, characterUID, resilienceCurrent } = character;
-  const { buildModifiers } = modifiers;
-
-  const handleApplyDamage = () => {
-    const damageValue = Number(damageAmount);
-    if (Number.isNaN(damageValue)) return;
-
-    // const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
-    const max = derivedThreshholdBase(stats);
-    const threshold = getDamageThreshold(
-      max,
-      buildModifiers.thresholdBonus,
-      damageValue
-    );
-
-    if (threshold === "Deadly") {
-      return;
-    }
-
-    const body: PostWoundBody = {
-      threshold,
-      damageType,
-      characterUID,
-    };
-
-    fetch("/api/wounds", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const newMax = getDerivedResilienceMax(stats, data);
-        const newCurrent = getDerivedResilience(
-          character?.resilienceCurrent,
-          data.severity,
-          newMax
-        );
-        setCharacter({
-          ...character,
-          wounds: [...character.wounds, data],
-          // resilienceMax: newMax,
-          resilienceCurrent: newCurrent,
-        });
-      });
-  };
-
-  const handleHealWound = (indexToRemove: number) => {
-    const wound = wounds[indexToRemove];
-
-    if (!wound) {
-      return;
-    }
-
-    const healed = getHealedWound(wound);
-    let updatedWounds: Wound[] = [];
-
-    if (healed === null) {
-      fetch(`/api/wounds/${indexToRemove}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          updatedWounds = data;
-        });
-      return;
-    } else {
-      fetch(`/api/wounds/${indexToRemove}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application-json",
-        },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          updatedWounds = data;
-        });
-    }
-
-    const maxResilience = getDerivedResilienceMax(stats, updatedWounds);
-    const severityDelta = wound.severity - (healed.severity ?? 0);
-
-    setCharacter({
-      ...character,
-      wounds,
-      resilienceCurrent: Math.min(
-        resilienceCurrent + severityDelta,
-        maxResilience
-      ),
-    });
-  };
+  const { wounds } = character;
+  const { handleHealWound, handleApplyDamage } = handlers;
 
   return (
     <div className="grid gap-4">
@@ -151,7 +47,7 @@ const Wounds = () => {
           </div>
           <button
             type="button"
-            onClick={handleApplyDamage}
+            onClick={() => handleApplyDamage(damageAmount, damageType)}
             className="rounded-full border border-[#8b6a3f] bg-[#19130d] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
           >
             Apply

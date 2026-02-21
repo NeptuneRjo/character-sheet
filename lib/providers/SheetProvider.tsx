@@ -1,12 +1,22 @@
 "use client";
 
 import { createContext, ReactNode, useMemo, useState } from "react";
-import { PhysicalBuilds, Sheet, SheetContextType } from "../types";
 import {
+  PhysicalBuilds,
+  PostWoundBody,
+  Sheet,
+  SheetContextType,
+  Wound,
+} from "../types";
+import {
+  derivedThreshholdBase,
   getBuildModifiers,
+  getDamageThreshold,
+  getDerivedResilience,
   getDerivedResilienceMax,
   getEffectiveMoveSpeed,
   getEffectivePhysicality,
+  getHealedWound,
   getIncreasedReserves,
   getIncreasedResilience,
   getPenalties,
@@ -35,6 +45,10 @@ export const SheetContext = createContext<SheetContextType>({
       initializationError("handleResilienceIncrease"),
     handleReservesIncrease: (value?: number) =>
       initializationError("handleReservesIncrease"),
+    handleHealWound: (woundId: number) =>
+      initializationError("handleHealWound"),
+    handleApplyDamage: (damageAmount: number | string, damageType: string) =>
+      initializationError("handleApplyDamage"),
   },
   modifiers: {
     maxResilience: 0,
@@ -59,6 +73,7 @@ export const SheetContext = createContext<SheetContextType>({
     maxWard: 0,
     effectiveMoveSpeed: 0,
     carryCapacityKg: 0,
+    baseDamageThreshold: 11,
   },
 });
 
@@ -68,17 +83,20 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const maxResilience = useMemo(() => {
     if (character) {
-      return getDerivedResilienceMax(character?.stats, character?.wounds);
+      return getDerivedResilienceMax(character.stats, character.wounds);
     }
     return 0;
-  }, [character?.stats, character?.skills]);
+  }, [character?.stats, character?.wounds]);
 
   const maxReserves = useMemo(() => {
-    if (maxResilience) {
-      return getResilienceReserves(maxResilience);
+    if (maxResilience && character) {
+      return getResilienceReserves(
+        maxResilience,
+        character?.resilienceReserves
+      );
     }
     return 0;
-  }, [maxResilience]);
+  }, [maxResilience, character?.resilienceReserves]);
 
   const buildModifiers = useMemo(() => {
     if (character) {
@@ -158,6 +176,13 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
     return 8;
   }, [buildModifiers]);
+
+  const baseDamageThreshold = useMemo(() => {
+    if (character) {
+      return derivedThreshholdBase(character.stats);
+    }
+    return 11;
+  }, [character?.stats]);
 
   const getCharacter = async (characterUID: string) => {
     fetch(`/api/characters/${characterUID}`)
@@ -258,6 +283,109 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     setCharacter({ ...character, resilienceReserves: increasedReserves });
   };
 
+  const handleHealWound = (woundId: number) => {
+    if (!character || !maxResilience) {
+      return;
+    }
+
+    const wound = character.wounds.find((wound) => wound.id === woundId);
+
+    if (!wound) {
+      return;
+    }
+
+    const healed = getHealedWound(wound);
+    let updatedWounds: Wound[] = [...character.wounds];
+
+    if (healed === null) {
+      fetch(`/api/wounds/${woundId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setCharacter({
+            ...character,
+            wounds: data,
+            resilienceCurrent: Math.min(
+              character.resilienceCurrent + wound.severity,
+              maxResilience
+            ),
+          });
+        });
+      return;
+    } else {
+      fetch(`/api/wounds/${woundId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application-json",
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const severityDelta = wound.severity - healed.severity;
+          setCharacter({
+            ...character,
+            wounds: data,
+            resilienceCurrent: Math.min(
+              character.resilienceCurrent + severityDelta,
+              maxResilience
+            ),
+          });
+        });
+    }
+  };
+
+  const handleApplyDamage = (
+    damageAmount: number | string,
+    damageType: string
+  ) => {
+    if (!character || !maxResilience) {
+      return;
+    }
+    const damageValue = Number(damageAmount);
+    if (Number.isNaN(damageValue)) return;
+
+    const threshold = getDamageThreshold(
+      baseDamageThreshold,
+      buildModifiers.thresholdBonus,
+      damageValue
+    );
+
+    if (threshold === "Deadly") {
+      return;
+    }
+
+    const body: PostWoundBody = {
+      threshold,
+      damageType,
+      characterUID: character?.characterUID,
+    };
+
+    fetch("/api/wounds", {
+      method: "POST",
+      body: JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const newResilienceCurrent = Math.min(
+          character.resilienceCurrent,
+          data.severity,
+          maxResilience
+        );
+        setCharacter({
+          ...character,
+          wounds: [...character.wounds, data],
+          resilienceCurrent: newResilienceCurrent,
+        });
+      });
+  };
+
   const values = {
     character,
     isLoading,
@@ -270,6 +398,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       handleResilienceDecrease,
       handleResilienceIncrease,
       handleReservesIncrease,
+      handleHealWound,
+      handleApplyDamage,
     },
     modifiers: {
       maxResilience,
@@ -282,6 +412,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       effectiveMoveSpeed,
       carryCapacityKg,
       hitClass,
+      baseDamageThreshold,
     },
   };
 

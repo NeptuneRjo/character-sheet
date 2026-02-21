@@ -20,3 +20,24 @@ export const insertWound = async (charUID: string, wound: InsWound) => {
 
   return query[0];
 };
+
+export const deleteWound = async (woundId: number) => {
+  // returns the deleted wound
+  const deleted = await db
+    .delete(wounds)
+    .where(eq(wounds.id, woundId))
+    .returning();
+
+  if (!deleted[0]) {
+    throw new Error(`The wound with id ${woundId} was not deleted.`);
+  }
+
+  const query = await db
+    .select()
+    .from(wounds)
+    .where(eq(wounds.characterId, deleted[0].characterId!));
+
+  return query;
+};
+
+export const updateWound = async (woundId: number) => {};

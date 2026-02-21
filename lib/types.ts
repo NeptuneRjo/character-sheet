@@ -134,6 +134,7 @@ export type SheetContextType = {
     effectiveMoveSpeed: number;
     carryCapacityKg: number;
     hitClass: number;
+    baseDamageThreshold: number;
   };
   handlers: {
     handleSpendAp: (cost: number) => void;
@@ -142,5 +143,10 @@ export type SheetContextType = {
     handleResilienceDecrease: () => void;
     handleResilienceIncrease: (value?: number) => void;
     handleReservesIncrease: (value?: number) => void;
+    handleHealWound: (woundId: number) => void;
+    handleApplyDamage: (
+      damageAmount: number | string,
+      damageType: string
+    ) => void;
   };
 };

@@ -213,7 +213,7 @@ export const getResilienceReserves = (
   maxResilience: number,
   resilienceReserves: number = 0
 ) => {
-  return Math.min(resilienceReserves, Math.floor(maxResilience / 3));
+  return Math.max(resilienceReserves, Math.floor(maxResilience / 3));
 };
 
 export const getCurrentEffect = (
