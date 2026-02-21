@@ -6,7 +6,7 @@ import { useContext, useState } from "react";
 const Wounds = () => {
   const { character, isLoading, handlers } = useContext(SheetContext);
 
-  const [damageAmount, setDamageAmount] = useState("0");
+  const [damageAmount, setDamageAmount] = useState<number>(0);
   const [damageType, setDamageType] = useState("Physical");
 
   if (!character || isLoading) {
@@ -26,7 +26,7 @@ const Wounds = () => {
               type="number"
               min={0}
               value={damageAmount}
-              onChange={(event) => setDamageAmount(event.target.value)}
+              onChange={(event) => setDamageAmount(Number(event.target.value))}
               className="w-full rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
               placeholder="Damage"
             />

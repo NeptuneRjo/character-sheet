@@ -1,4 +1,4 @@
-import { InsWound } from "@/lib/types";
+import { InsWound, Wound } from "@/lib/types";
 import { characters, wounds } from "../schema";
 import { db } from "..";
 import { eq } from "drizzle-orm";
@@ -40,4 +40,21 @@ export const deleteWound = async (woundId: number) => {
   return query;
 };
 
-export const updateWound = async (woundId: number) => {};
+export const updateWound = async (woundId: number, woundUpdate: Wound) => {
+  const updated = await db
+    .update(wounds)
+    .set(woundUpdate)
+    .where(eq(wounds.id, woundId))
+    .returning();
+
+  if (!updated[0]) {
+    throw new Error(`The wound with id ${woundId} was not updated.`);
+  }
+
+  const query = await db
+    .select()
+    .from(wounds)
+    .where(eq(wounds.characterId, updated[0].characterId!));
+
+  return query;
+};

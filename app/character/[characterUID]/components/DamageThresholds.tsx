@@ -10,16 +10,9 @@ const DamageThresholds = () => {
     return <div>loading...</div>;
   }
 
-  const { buildModifiers, maxResilience } = modifiers;
+  const { damageThresholds } = modifiers;
+  const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
 
-  const trivialMax =
-    Math.floor(maxResilience * 0.25) + buildModifiers.thresholdBonus;
-  const lightMax =
-    Math.floor(maxResilience * 0.5) + buildModifiers.thresholdBonus;
-  const mediumMax =
-    Math.floor(maxResilience * 0.9) + buildModifiers.thresholdBonus;
-  const heavyMax =
-    Math.floor(maxResilience * 1.25) + buildModifiers.thresholdBonus;
   const ranges = [
     { label: "Trivial", range: `0-${trivialMax}` },
     { label: "Light", range: `${trivialMax + 1}-${lightMax}` },

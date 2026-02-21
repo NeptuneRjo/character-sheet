@@ -100,25 +100,6 @@ export const createWound = (name: string): InsWound => {
   };
 };
 
-export const getDamageThreshold = (
-  thresholdBase: number,
-  thresholdBonus: number,
-  damage: number
-): DamageThresholds => {
-  const threshold = (mult: number) =>
-    Math.floor(thresholdBase * mult) + thresholdBonus;
-  const trivialMax = threshold(0.25);
-  const lightMax = threshold(0.9);
-  const mediumMax = threshold(1.25);
-  const heavyMax = threshold(1.25);
-
-  if (damage > heavyMax) return "Deadly";
-  else if (damage > mediumMax) return "Heavy";
-  else if (damage > lightMax) return "Medium";
-  else if (damage > trivialMax) return "Light";
-  else return "Trivial";
-};
-
 export const getWoundName = (threshold: string, damageType: string) => {
   // const physicalTypes = PhysicalDamageTypes as readonly string[];
   const isLightPhysical =

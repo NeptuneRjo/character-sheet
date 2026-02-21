@@ -2,6 +2,7 @@
 
 import { createContext, ReactNode, useMemo, useState } from "react";
 import {
+  DamageThresholds,
   PhysicalBuilds,
   PostWoundBody,
   Sheet,
@@ -11,7 +12,6 @@ import {
 import {
   derivedThreshholdBase,
   getBuildModifiers,
-  getDamageThreshold,
   getDerivedResilience,
   getDerivedResilienceMax,
   getEffectiveMoveSpeed,
@@ -47,7 +47,7 @@ export const SheetContext = createContext<SheetContextType>({
       initializationError("handleReservesIncrease"),
     handleHealWound: (woundId: number) =>
       initializationError("handleHealWound"),
-    handleApplyDamage: (damageAmount: number | string, damageType: string) =>
+    handleApplyDamage: (damageAmount: number, damageType: string) =>
       initializationError("handleApplyDamage"),
   },
   modifiers: {
@@ -74,6 +74,12 @@ export const SheetContext = createContext<SheetContextType>({
     effectiveMoveSpeed: 0,
     carryCapacityKg: 0,
     baseDamageThreshold: 11,
+    damageThresholds: {
+      trivialMax: 2,
+      lightMax: 4,
+      mediumMax: 7,
+      heavyMax: 10,
+    },
   },
 });
 
@@ -183,6 +189,27 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
     return 11;
   }, [character?.stats]);
+
+  const damageThresholds = useMemo(() => {
+    if (character && maxResilience && buildModifiers) {
+      return {
+        trivialMax:
+          Math.floor(maxResilience * 0.25) + buildModifiers.thresholdBonus,
+        lightMax:
+          Math.floor(maxResilience * 0.5) + buildModifiers.thresholdBonus,
+        mediumMax:
+          Math.floor(maxResilience * 0.9) + buildModifiers.thresholdBonus,
+        heavyMax:
+          Math.floor(maxResilience * 1.25) + buildModifiers.thresholdBonus,
+      };
+    }
+    return {
+      trivialMax: 2,
+      lightMax: 4,
+      mediumMax: 7,
+      heavyMax: 10,
+    };
+  }, [maxResilience, buildModifiers]);
 
   const getCharacter = async (characterUID: string) => {
     fetch(`/api/characters/${characterUID}`)
@@ -295,7 +322,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const healed = getHealedWound(wound);
-    let updatedWounds: Wound[] = [...character.wounds];
 
     if (healed === null) {
       fetch(`/api/wounds/${woundId}`, {
@@ -320,8 +346,9 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       fetch(`/api/wounds/${woundId}`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application-json",
+          "Content-Type": "application/json",
         },
+        body: JSON.stringify(healed),
       })
         .then((res) => res.json())
         .then((data) => {
@@ -338,25 +365,20 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const handleApplyDamage = (
-    damageAmount: number | string,
-    damageType: string
-  ) => {
-    if (!character || !maxResilience) {
+  const handleApplyDamage = (damageAmount: number, damageType: string) => {
+    if (!character || !maxResilience || !damageThresholds) {
       return;
     }
-    const damageValue = Number(damageAmount);
-    if (Number.isNaN(damageValue)) return;
 
-    const threshold = getDamageThreshold(
-      baseDamageThreshold,
-      buildModifiers.thresholdBonus,
-      damageValue
-    );
+    const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
 
-    if (threshold === "Deadly") {
-      return;
-    }
+    let threshold: DamageThresholds = "Trivial";
+    if (damageAmount > trivialMax) threshold = "Light";
+    if (damageAmount > lightMax) threshold = "Medium";
+    if (damageAmount > mediumMax) threshold = "Heavy";
+    if (damageAmount > heavyMax) threshold = "Deadly";
+
+    if (threshold === "Deadly") return;
 
     const body: PostWoundBody = {
       threshold,
@@ -413,6 +435,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       carryCapacityKg,
       hitClass,
       baseDamageThreshold,
+      damageThresholds,
     },
   };
 
