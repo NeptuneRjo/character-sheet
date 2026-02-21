@@ -51,7 +51,7 @@ export const SheetContext = createContext<SheetContextType>({
       initializationError("handleApplyDamage"),
   },
   modifiers: {
-    maxResilience: 0,
+    maxResilience: 10,
     maxReserves: 0,
     buildModifiers: {
       hitclassBonus: 0,
@@ -191,16 +191,18 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [character?.stats]);
 
   const damageThresholds = useMemo(() => {
-    if (character && maxResilience && buildModifiers) {
+    if (character && baseDamageThreshold && buildModifiers) {
       return {
         trivialMax:
-          Math.floor(maxResilience * 0.25) + buildModifiers.thresholdBonus,
+          Math.floor(baseDamageThreshold * 0.25) +
+          buildModifiers.thresholdBonus,
         lightMax:
-          Math.floor(maxResilience * 0.5) + buildModifiers.thresholdBonus,
+          Math.floor(baseDamageThreshold * 0.5) + buildModifiers.thresholdBonus,
         mediumMax:
-          Math.floor(maxResilience * 0.9) + buildModifiers.thresholdBonus,
+          Math.floor(baseDamageThreshold * 0.9) + buildModifiers.thresholdBonus,
         heavyMax:
-          Math.floor(maxResilience * 1.25) + buildModifiers.thresholdBonus,
+          Math.floor(baseDamageThreshold * 1.25) +
+          buildModifiers.thresholdBonus,
       };
     }
     return {
@@ -209,7 +211,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       mediumMax: 7,
       heavyMax: 10,
     };
-  }, [maxResilience, buildModifiers]);
+  }, [baseDamageThreshold, buildModifiers]);
 
   const getCharacter = async (characterUID: string) => {
     fetch(`/api/characters/${characterUID}`)
