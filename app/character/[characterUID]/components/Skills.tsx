@@ -1,19 +1,18 @@
 "use client";
 
 import { SheetContext } from "@/lib/providers/SheetProvider";
-import { BuildModifiers, PhysicalBuilds } from "@/lib/types";
-import { getBuildModifiers } from "@/lib/utils";
+import { BuildModifiers } from "@/lib/types";
 import { useContext } from "react";
 
 const Skills = () => {
-  const { character, isLoading } = useContext(SheetContext);
+  const { character, isLoading, modifiers } = useContext(SheetContext);
 
   if (!character || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { physicalBuild, skills } = character;
-  const buildModifiers = getBuildModifiers(physicalBuild as PhysicalBuilds);
+  const { skills } = character;
+  const { buildModifiers } = modifiers;
 
   const hasBuildModifier = (skillName: string) => {
     let normalizedSkillName = skillName.replace(" ", "").toLowerCase();
