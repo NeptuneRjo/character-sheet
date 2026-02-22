@@ -3,26 +3,14 @@
 import { createContext, ReactNode, useMemo, useState } from "react";
 import {
   DamageThresholds,
-  PhysicalBuilds,
   PostWoundBody,
   Sheet,
   SheetContextType,
-  Wound,
 } from "../types";
 import {
-  derivedThreshholdBase,
-  getBuildModifiers,
-  getDerivedResilience,
-  getDerivedResilienceMax,
-  getEffectiveMoveSpeed,
-  getEffectivePhysicality,
   getHealedWound,
   getIncreasedReserves,
   getIncreasedResilience,
-  getPenalties,
-  getReactionPhysicalityBonus,
-  getResilienceReserves,
-  getWardMax,
   spendAP,
 } from "../utils";
 
@@ -89,16 +77,22 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const maxResilience = useMemo(() => {
     if (character) {
-      return getDerivedResilienceMax(character.stats, character.wounds);
+      const severity = Array.from(character.wounds).reduce(
+        (total, wound) => total + wound.severity,
+        0
+      );
+
+      const base = 4 + 2 * character.stats.vit;
+      return Math.max(0, base - severity);
     }
     return 0;
   }, [character?.stats, character?.wounds]);
 
   const maxReserves = useMemo(() => {
     if (maxResilience && character) {
-      return getResilienceReserves(
-        maxResilience,
-        character?.resilienceReserves
+      return Math.max(
+        character.resilienceReserves,
+        Math.floor(maxResilience / 3)
       );
     }
     return 0;
@@ -106,7 +100,41 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const buildModifiers = useMemo(() => {
     if (character) {
-      return getBuildModifiers(character.physicalBuild as PhysicalBuilds);
+      switch (character.physicalBuild) {
+        case "Lithe":
+          return {
+            hitclassBonus: 2,
+            movespeedBonus: 1,
+            thresholdBonus: 0,
+            woundPointBonus: 0,
+            carryMultiplier: 0.5,
+            grappleDefense: 2,
+            grappleOffense: 0,
+            force: 0,
+          };
+        case "Hulking":
+          return {
+            hitclassBonus: -2,
+            movespeedBonus: -1,
+            thresholdBonus: 2,
+            woundPointBonus: 4,
+            carryMultiplier: 1.5,
+            grappleDefense: 0.5,
+            grappleOffense: 2,
+            force: 2,
+          };
+        default:
+          return {
+            hitclassBonus: 0,
+            movespeedBonus: 0,
+            thresholdBonus: 0,
+            woundPointBonus: 0,
+            carryMultiplier: 1,
+            grappleDefense: 1,
+            grappleOffense: 1,
+            force: 1,
+          };
+      }
     }
     return {
       hitclassBonus: 0,
@@ -122,7 +150,20 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const penalties = useMemo(() => {
     if (character && maxResilience) {
-      return getPenalties(maxResilience, character.resilienceCurrent);
+      const { resilienceCurrent } = character;
+      let movementPenalty = 0;
+      let statPenalty = 0;
+
+      if (maxResilience > 0 && resilienceCurrent < maxResilience / 2) {
+        movementPenalty = 1;
+      } else if (maxResilience > 0 && resilienceCurrent < maxResilience / 4) {
+        statPenalty = 1;
+      } else if (maxResilience > 0 && resilienceCurrent < maxResilience / 8) {
+        movementPenalty = 2;
+        statPenalty = 2;
+      }
+
+      return { movementPenalty, statPenalty };
     }
     return {
       movementPenalty: 0,
@@ -132,38 +173,35 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const effectivePhysicality = useMemo(() => {
     if (character && penalties) {
-      return getEffectivePhysicality(
-        character.stats.phy,
-        penalties.statPenalty
-      );
+      return Math.max(0, character.stats.phy - penalties.statPenalty);
     }
     return 0;
   }, [character?.stats, penalties]);
 
   const reactionPhysicalityBonus = useMemo(() => {
     if (character && effectivePhysicality) {
-      return getReactionPhysicalityBonus(
-        character.physicalBuild as PhysicalBuilds,
-        effectivePhysicality
-      );
+      const { physicalBuild } = character;
+      const multiplier =
+        physicalBuild === "Lithe" ? 1 : physicalBuild === "Average" ? 0.5 : 0;
+
+      return Math.floor(effectivePhysicality * multiplier);
     }
     return 0;
   }, [character?.physicalBuild, effectivePhysicality]);
 
   const maxWard = useMemo(() => {
     if (character) {
-      return getWardMax(character.stats.wil);
+      return character.stats.wil * 4;
     }
     return 0;
   }, [character?.stats]);
 
   const effectiveMoveSpeed = useMemo(() => {
     if (buildModifiers && penalties) {
-      return getEffectiveMoveSpeed(
-        5,
-        buildModifiers.movespeedBonus,
-        penalties.movementPenalty
-      );
+      const { movespeedBonus } = buildModifiers;
+      const { movementPenalty } = penalties;
+
+      return Math.max(0, 5 + movespeedBonus - movementPenalty);
     }
     return 0;
   }, [buildModifiers, penalties]);
@@ -185,7 +223,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const baseDamageThreshold = useMemo(() => {
     if (character) {
-      return derivedThreshholdBase(character.stats);
+      return 8 + 3 * character.stats.vit + character.stats.phy;
     }
     return 11;
   }, [character?.stats]);
@@ -205,6 +243,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
           buildModifiers.thresholdBonus,
       };
     }
+
     return {
       trivialMax: 2,
       lightMax: 4,
@@ -245,6 +284,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     if (Number.isNaN(cost) || cost <= 0 || !character) {
       return;
     }
+
     setCharacter({
       ...character,
       wardCurrent: Math.min(0, character.wardCurrent - cost),
@@ -266,14 +306,16 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     if (!character) {
       return;
     }
-    // const { resilienceReserves } = character;
+
     let resilience = character.resilienceCurrent;
     let reserves = character.resilienceReserves;
+
     if (reserves > 0) {
       reserves = Math.max(0, reserves - 1);
     } else if (resilience > 0) {
       resilience -= 1;
     }
+
     setCharacter({
       ...character,
       resilienceCurrent: resilience,
