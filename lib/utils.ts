@@ -215,15 +215,19 @@ export const getHealedWound = (wound: Wound): Wound | null => {
   switch (wound.name) {
     case "Bleeding Gash":
       woundCopy.name = "Generic Light Wound";
+      woundCopy.severity = 2;
       break;
     case "Generic Heavy Wound":
       woundCopy.name = "Generic Medium Wound";
+      woundCopy.severity = 3;
       break;
     case "Generic Medium Wound":
       woundCopy.name = "Generic Light Wound";
+      woundCopy.severity = 2;
       break;
     case "Generic Light Wound":
       woundCopy.name = "Generic Trivial Wound";
+      woundCopy.severity = 1;
       break;
     default:
       return null;
