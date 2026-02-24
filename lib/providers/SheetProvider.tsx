@@ -40,6 +40,7 @@ export const SheetContext = createContext<SheetContextType>({
   },
   modifiers: {
     maxResilience: 10,
+    effectiveResilience: 10,
     maxReserves: 0,
     buildModifiers: {
       hitclassBonus: 0,
@@ -68,6 +69,10 @@ export const SheetContext = createContext<SheetContextType>({
       mediumMax: 7,
       heavyMax: 10,
     },
+    currentEffect: {
+      label: "Trivial",
+      detail: "No negatives",
+    },
   },
 });
 
@@ -76,6 +81,14 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const maxResilience = useMemo(() => {
+    if (character) {
+      const base = 4 + 2 * character.stats.vit;
+      return Math.max(0, base);
+    }
+    return 0;
+  }, [character?.stats, character?.wounds]);
+
+  const effectiveResilience = useMemo(() => {
     if (character) {
       const severity = Array.from(character.wounds).reduce(
         (total, wound) => total + wound.severity,
@@ -252,6 +265,10 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [baseDamageThreshold, buildModifiers]);
 
+  const currentEffect = useMemo(() => {
+    return { label: "", detail: "" };
+  }, []);
+
   const getCharacter = async (characterUID: string) => {
     fetch(`/api/characters/${characterUID}`)
       .then((res) => res.json())
@@ -324,15 +341,15 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleResilienceIncrease = (value?: number) => {
-    if (!character || !maxResilience) {
+    if (!character || !effectiveResilience) {
       return;
     }
     if (value) {
       setCharacter({ ...character, resilienceCurrent: value });
     } else {
-      const increasedResilience = getIncreasedResilience(
-        character.resilienceCurrent,
-        maxResilience
+      const increasedResilience = Math.min(
+        character.resilienceCurrent + 1,
+        effectiveResilience
       );
       setCharacter({ ...character, resilienceCurrent: increasedResilience });
     }
@@ -379,10 +396,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
           setCharacter({
             ...character,
             wounds: data,
-            resilienceCurrent: Math.min(
-              character.resilienceCurrent + wound.severity,
-              maxResilience
-            ),
           });
         });
       return;
@@ -400,10 +413,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
           setCharacter({
             ...character,
             wounds: data,
-            resilienceCurrent: Math.min(
-              character.resilienceCurrent + severityDelta,
-              maxResilience
-            ),
           });
         });
     }
@@ -440,9 +449,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       .then((res) => res.json())
       .then((data) => {
         const newResilienceCurrent = Math.min(
-          character.resilienceCurrent,
-          data.severity,
-          maxResilience
+          character.resilienceCurrent - data.severity,
+          effectiveResilience
         );
         setCharacter({
           ...character,
@@ -469,6 +477,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     },
     modifiers: {
       maxResilience,
+      effectiveResilience,
       maxReserves,
       buildModifiers,
       penalties,
@@ -480,6 +489,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       hitClass,
       baseDamageThreshold,
       damageThresholds,
+      currentEffect,
     },
   };
 

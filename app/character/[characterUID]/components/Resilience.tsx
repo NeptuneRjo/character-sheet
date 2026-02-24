@@ -13,7 +13,7 @@ const Resilience = () => {
   }
 
   const { resilienceCurrent, resilienceReserves } = character;
-  const { maxResilience, maxReserves } = modifiers;
+  const { maxResilience, maxReserves, effectiveResilience } = modifiers;
   const {
     handleResilienceDecrease,
     handleResilienceIncrease,
@@ -28,14 +28,17 @@ const Resilience = () => {
     maxReserves
   );
 
-  const currentEffect = getCurrentEffect(maxResilience, resilienceCurrent);
+  const currentEffect = getCurrentEffect(
+    effectiveResilience,
+    resilienceCurrent
+  );
 
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-lg font-semibold text-[#f0e4cf]">Resilience</h2>
         <div className="flex flex-wrap items-center gap-3 text-sm text-[#b7a387]">
-          <span className="font-semibold">Current / Max</span>
+          <span className="font-semibold">Current / Effective / Max</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -52,9 +55,13 @@ const Resilience = () => {
                 handleResilienceIncrease(Number(event.target.value))
               }
               min={0}
-              max={maxResilience}
+              max={effectiveResilience}
               className="w-20 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-1 text-sm text-[#f0e4cf]"
-            />
+            />{" "}
+            <span className="text-[#8b6a3f]">/</span>
+            <span className="min-w-[3.5rem] text-sm font-semibold text-[#f0e4cf]">
+              {effectiveResilience}
+            </span>
             <span className="text-[#8b6a3f]">/</span>
             <span className="min-w-[3.5rem] text-sm font-semibold text-[#f0e4cf]">
               {maxResilience}

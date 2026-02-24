@@ -126,6 +126,7 @@ export type SheetContextType = {
   modifiers: {
     penalties: CurrentPenalties | null;
     maxResilience: number;
+    effectiveResilience: number;
     maxReserves: number;
     buildModifiers: BuildModifiers;
     effectivePhysicality: number;
@@ -136,6 +137,7 @@ export type SheetContextType = {
     hitClass: number;
     baseDamageThreshold: number;
     damageThresholds: DamageMaxes;
+    currentEffect: CurrentEffect;
   };
   handlers: {
     handleSpendAp: (cost: number) => void;
