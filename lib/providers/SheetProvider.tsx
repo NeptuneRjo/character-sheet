@@ -169,9 +169,11 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
       if (maxResilience > 0 && resilienceCurrent < maxResilience / 2) {
         movementPenalty = 1;
-      } else if (maxResilience > 0 && resilienceCurrent < maxResilience / 4) {
+      }
+      if (maxResilience > 0 && resilienceCurrent < maxResilience / 4) {
         statPenalty = 1;
-      } else if (maxResilience > 0 && resilienceCurrent < maxResilience / 8) {
+      }
+      if (maxResilience > 0 && resilienceCurrent < maxResilience / 8) {
         movementPenalty = 2;
         statPenalty = 2;
       }
