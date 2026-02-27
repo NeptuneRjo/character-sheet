@@ -22,6 +22,13 @@ export type Sheet = Character & {
   reactions: Reaction[];
 };
 
+export type Panel = Character & {
+  stats: Stats;
+  wounds: Wound[];
+  equipment: Equipment[];
+  skills: CharacterSkill[];
+};
+
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;
 export type InsWound = typeof schema.wounds.$inferInsert;
@@ -149,4 +156,10 @@ export type SheetContextType = {
     handleHealWound: (woundId: number) => void;
     handleApplyDamage: (damageAmount: number, damageType: string) => void;
   };
+};
+
+export type PanelContextType = {
+  characters: Panel[];
+  isLoading: boolean;
+  skills: Skill[];
 };
