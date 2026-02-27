@@ -1,4 +1,13 @@
-import { Character, Sheet, Stats } from "@/lib/types";
+import {
+  Character,
+  CharacterSkill,
+  Equipment,
+  Panel,
+  Sheet,
+  Skill,
+  Stats,
+  Wound,
+} from "@/lib/types";
 import { db } from "../index";
 import {
   actions,
@@ -169,6 +178,112 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
 
       if (!isDupe) {
         acc.reactions.push(reactions);
+      }
+    }
+
+    if (skills && characterSkills) {
+      const isDupe = acc.skills.some((skill) => skill.id === skills.id);
+
+      if (!isDupe) {
+        acc.skills.push(skills);
+      }
+    }
+
+    return acc;
+  }, {} as any);
+
+  return result;
+};
+
+/**
+ * Retrieve the character for the GM-Panel
+ */
+export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
+  const statsSubquery = db
+    .select()
+    .from(stats)
+    .where(eq(stats.characterId, characters.id))
+    .as("stats");
+  const woundsSubquery = db
+    .select()
+    .from(wounds)
+    .where(eq(wounds.characterId, characters.id))
+    .as("wounds");
+  const equipmentSubquery = db
+    .select()
+    .from(equipment)
+    .where(eq(equipment.characterId, characters.id))
+    .as("equipment");
+  const skillsSubquery = db
+    .select({
+      skills,
+      skillId: characterSkills.skillId,
+      characterId: characterSkills.characterId,
+      flatModifier: characterSkills.flatModifier,
+      bonusDice: characterSkills.bonusDice,
+    })
+    .from(characterSkills)
+    .leftJoin(skills, eq(characterSkills.skillId, skills.id))
+    .where(eq(characterSkills.characterId, characters.id))
+    .as("skills");
+
+  const query = await db
+    .select({
+      characters,
+      stats,
+      wounds,
+      equipment,
+      skills: {
+        id: skills.id,
+        name: skills.name,
+        ability: skills.ability,
+        utility: skills.utility,
+        skillId: skillsSubquery.skillId,
+        characterId: skillsSubquery.characterId,
+        flatModifier: skillsSubquery.flatModifier,
+        bonusDice: skillsSubquery.bonusDice,
+      },
+    })
+    .from(characters)
+    .leftJoinLateral(statsSubquery, sql`true`)
+    .leftJoinLateral(woundsSubquery, sql`true`)
+    .leftJoinLateral(equipmentSubquery, sql`true`)
+    .leftJoinLateral(skillsSubquery, sql`true`)
+    .where(eq(characters.characterUID, characterUID));
+
+  const result = query.reduce<Panel>((acc, cv) => {
+    // the objects for this iteration
+    const { characters, stats, wounds, equipment, skills } = cv;
+
+    // if the last iteration's object is not the same as this iteration's object, create a new object
+    if (acc["characterUID"] !== characters!.characterUID) {
+      // const { id, ...rest } = characters!;
+      acc = {
+        ...characters,
+        stats: {} as Stats,
+        wounds: [],
+        equipment: [],
+        skills: [],
+      };
+    }
+
+    if (stats) {
+      acc.stats = stats;
+    }
+
+    if (wounds) {
+      const isDupe = acc.wounds.some((wound) => wound.id === wounds.id);
+
+      if (!isDupe) {
+        acc.wounds.push(wounds);
+      }
+    }
+
+    if (equipment) {
+      const isDupe = acc.equipment.some((item) => item.id === equipment.id);
+
+      if (!isDupe) {
+        acc.equipment.push(equipment);
       }
     }
 
