@@ -3,13 +3,13 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext } from "react";
 
 const Equipment = () => {
-  const { character, isLoading } = useContext(SheetContext);
+  const { sheet, isLoading } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { equipment } = character;
+  const { equipment } = sheet;
 
   return (
     <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-5">

@@ -4,15 +4,15 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext, useState } from "react";
 
 const Reactions = () => {
-  const { character, isLoading, handlers, modifiers } =
-    useContext(SheetContext);
+  const { sheet, isLoading, handlers, modifiers } = useContext(SheetContext);
   const [wardSpendAmount, setWardSpendAmount] = useState<number>(0);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>Loading...</div>;
   }
 
-  const { reactions, wardCurrent, isCaster } = character;
+  const { reactions, character } = sheet;
+  const { wardCurrent, isCaster } = character;
   const { maxWard, reactionPhysicalityBonus } = modifiers;
   const { handleRefillWard, handleSpendAp, handleSpendWard } = handlers;
 

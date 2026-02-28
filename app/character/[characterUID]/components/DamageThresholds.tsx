@@ -4,9 +4,9 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext } from "react";
 
 const DamageThresholds = () => {
-  const { character, isLoading, modifiers } = useContext(SheetContext);
+  const { sheet, isLoading, modifiers } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 

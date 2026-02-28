@@ -5,13 +5,13 @@ import { BuildModifiers } from "@/lib/types";
 import { useContext } from "react";
 
 const Skills = () => {
-  const { character, isLoading, modifiers } = useContext(SheetContext);
+  const { sheet, isLoading, modifiers } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { skills } = character;
+  const { skills } = sheet;
   const { buildModifiers } = modifiers;
 
   const hasBuildModifier = (skillName: string) => {

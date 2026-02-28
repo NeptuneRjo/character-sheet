@@ -12,7 +12,8 @@ export type CharacterSkill = Skill & typeof schema.characterSkills.$inferSelect;
 export type Action = typeof schema.actions.$inferSelect;
 export type Reaction = typeof schema.reactions.$inferSelect;
 
-export type Sheet = Character & {
+export type Sheet = {
+  character: Character;
   traits: Trait[];
   stats: Stats;
   wounds: Wound[];
@@ -22,7 +23,8 @@ export type Sheet = Character & {
   reactions: Reaction[];
 };
 
-export type Panel = Character & {
+export type Panel = {
+  character: Character;
   stats: Stats;
   wounds: Wound[];
   equipment: Equipment[];
@@ -126,10 +128,10 @@ export type PostWoundBody = {
 };
 
 export type SheetContextType = {
-  character: Sheet | null;
+  sheet: Sheet | null;
   isLoading: boolean;
-  setCharacter: Dispatch<SetStateAction<Sheet | null>>;
-  getCharacter: (characterUID: string) => Promise<void>;
+  setSheet: Dispatch<SetStateAction<Sheet | null>>;
+  getSheet: (characterUID: string) => Promise<void>;
   modifiers: {
     penalties: CurrentPenalties | null;
     maxResilience: number;
@@ -162,4 +164,18 @@ export type PanelContextType = {
   characters: Panel[];
   isLoading: boolean;
   skills: Skill[];
+  getModifiers: (character: Panel) => {
+    maxResilience: number;
+    effectiveMoveSpeed: number;
+  };
+  setters: {
+    setMoveSpeed: () => void;
+    setActionPoints: () => void;
+    setResilienceReserves: () => void;
+    setResilienceCurrent: () => void;
+    setPhysicalBuild: () => void;
+    setStats: () => void;
+  };
+  addSkill: () => void;
+  addWound: () => void;
 };

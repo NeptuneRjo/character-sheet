@@ -4,16 +4,16 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext, useState } from "react";
 
 const Wounds = () => {
-  const { character, isLoading, handlers } = useContext(SheetContext);
+  const { sheet, isLoading, handlers } = useContext(SheetContext);
 
   const [damageAmount, setDamageAmount] = useState<number>(0);
   const [damageType, setDamageType] = useState("Physical");
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { wounds } = character;
+  const { wounds } = sheet;
   const { handleHealWound, handleApplyDamage } = handlers;
 
   return (

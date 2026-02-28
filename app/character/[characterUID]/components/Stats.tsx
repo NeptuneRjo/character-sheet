@@ -4,7 +4,7 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext } from "react";
 
 const Stats = () => {
-  const { character, isLoading, modifiers } = useContext(SheetContext);
+  const { sheet, isLoading, modifiers } = useContext(SheetContext);
   const labels = (stat: string) => {
     switch (stat.toLowerCase()) {
       case "phy":
@@ -22,11 +22,11 @@ const Stats = () => {
     }
   };
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { stats } = character;
+  const { stats } = sheet;
   const { penalties } = modifiers;
 
   const shouldDisplayStat = (stat: string) => {

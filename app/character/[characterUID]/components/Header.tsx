@@ -4,13 +4,13 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext } from "react";
 
 const Header = () => {
-  const { character, isLoading, modifiers } = useContext(SheetContext);
+  const { sheet, isLoading, modifiers } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { name, physicalBuild } = character;
+  const { name, physicalBuild } = sheet.character;
   const { carryCapacityKg, hitClass } = modifiers;
 
   return (

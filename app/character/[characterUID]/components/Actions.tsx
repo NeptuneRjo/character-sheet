@@ -4,14 +4,14 @@ import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext } from "react";
 
 const Actions = () => {
-  const { character, isLoading, modifiers, handlers } =
-    useContext(SheetContext);
+  const { sheet, isLoading, modifiers, handlers } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { actionPoints, actions } = character;
+  const { character, actions } = sheet;
+  const { actionPoints } = character;
   const { effectiveMoveSpeed } = modifiers;
   const { handleSpendAp } = handlers;
 

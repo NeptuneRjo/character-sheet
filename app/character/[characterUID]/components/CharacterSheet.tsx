@@ -20,17 +20,17 @@ interface Props {
 }
 
 const CharacterSheet = ({ characterUID }: Props) => {
-  const { character, isLoading, getCharacter } = useContext(SheetContext);
+  const { sheet, isLoading, getSheet } = useContext(SheetContext);
 
   useEffect(() => {
-    if (!character) {
+    if (!sheet) {
       (async () => {
-        await getCharacter(characterUID);
+        await getSheet(characterUID);
       })();
     }
   }, []);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 

@@ -19,10 +19,10 @@ const initializationError = (func: string) => {
 };
 
 export const SheetContext = createContext<SheetContextType>({
-  character: null,
+  sheet: null,
   isLoading: true,
-  setCharacter: () => initializationError("setCharacter"),
-  getCharacter: async () => initializationError("getCharacter"),
+  setSheet: () => initializationError("setSheet"),
+  getSheet: async () => initializationError("getsheet"),
   handlers: {
     handleSpendAp: () => initializationError("handleSpendAp"),
     handleSpendWard: () => initializationError("handleSpendWard"),
@@ -77,43 +77,43 @@ export const SheetContext = createContext<SheetContextType>({
 });
 
 export const SheetProvider = ({ children }: { children: ReactNode }) => {
-  const [character, setCharacter] = useState<Sheet | null>(null);
+  const [sheet, setSheet] = useState<Sheet | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const maxResilience = useMemo(() => {
-    if (character) {
-      const base = 4 + 2 * character.stats.vit;
+    if (sheet) {
+      const base = 4 + 2 * sheet.stats.vit;
       return Math.max(0, base);
     }
     return 0;
-  }, [character?.stats, character?.wounds]);
+  }, [sheet?.stats, sheet?.wounds]);
 
   const effectiveResilience = useMemo(() => {
-    if (character) {
-      const severity = Array.from(character.wounds).reduce(
+    if (sheet) {
+      const severity = Array.from(sheet.wounds).reduce(
         (total, wound) => total + wound.severity,
         0
       );
 
-      const base = 4 + 2 * character.stats.vit;
+      const base = 4 + 2 * sheet.stats.vit;
       return Math.max(0, base - severity);
     }
     return 0;
-  }, [character?.stats, character?.wounds]);
+  }, [sheet?.stats, sheet?.wounds]);
 
   const maxReserves = useMemo(() => {
-    if (maxResilience && character) {
+    if (maxResilience && sheet) {
       return Math.max(
-        character.resilienceReserves,
+        sheet.character.resilienceReserves,
         Math.floor(maxResilience / 3)
       );
     }
     return 0;
-  }, [maxResilience, character?.resilienceReserves]);
+  }, [maxResilience, sheet?.character.resilienceReserves]);
 
   const buildModifiers = useMemo(() => {
-    if (character) {
-      switch (character.physicalBuild) {
+    if (sheet) {
+      switch (sheet.character.physicalBuild) {
         case "Lithe":
           return {
             hitclassBonus: 2,
@@ -159,11 +159,11 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       grappleOffense: 0,
       force: 0,
     };
-  }, [character?.physicalBuild]);
+  }, [sheet?.character.physicalBuild]);
 
   const penalties = useMemo(() => {
-    if (character && maxResilience) {
-      const { resilienceCurrent } = character;
+    if (sheet && maxResilience) {
+      const { resilienceCurrent } = sheet.character;
       let movementPenalty = 0;
       let statPenalty = 0;
 
@@ -184,32 +184,32 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       movementPenalty: 0,
       statPenalty: 0,
     };
-  }, [maxResilience, character?.resilienceCurrent]);
+  }, [maxResilience, sheet?.character.resilienceCurrent]);
 
   const effectivePhysicality = useMemo(() => {
-    if (character && penalties) {
-      return Math.max(0, character.stats.phy - penalties.statPenalty);
+    if (sheet && penalties) {
+      return Math.max(0, sheet.stats.phy - penalties.statPenalty);
     }
     return 0;
-  }, [character?.stats, penalties]);
+  }, [sheet?.stats, penalties]);
 
   const reactionPhysicalityBonus = useMemo(() => {
-    if (character && effectivePhysicality) {
-      const { physicalBuild } = character;
+    if (sheet && effectivePhysicality) {
+      const { physicalBuild } = sheet.character;
       const multiplier =
         physicalBuild === "Lithe" ? 1 : physicalBuild === "Average" ? 0.5 : 0;
 
       return Math.floor(effectivePhysicality * multiplier);
     }
     return 0;
-  }, [character?.physicalBuild, effectivePhysicality]);
+  }, [sheet?.character.physicalBuild, effectivePhysicality]);
 
   const maxWard = useMemo(() => {
-    if (character) {
-      return character.stats.wil * 4;
+    if (sheet) {
+      return sheet.stats.wil * 4;
     }
     return 0;
-  }, [character?.stats]);
+  }, [sheet?.stats]);
 
   const effectiveMoveSpeed = useMemo(() => {
     if (buildModifiers && penalties) {
@@ -222,12 +222,12 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [buildModifiers, penalties]);
 
   const carryCapacityKg = useMemo(() => {
-    if (character && buildModifiers) {
-      const base = 20 + character.stats.phy * 10;
+    if (sheet && buildModifiers) {
+      const base = 20 + sheet.stats.phy * 10;
       return Math.max(0, Math.round(base * buildModifiers.carryMultiplier));
     }
     return 0;
-  }, [character?.stats, buildModifiers]);
+  }, [sheet?.stats, buildModifiers]);
 
   const hitClass = useMemo(() => {
     if (buildModifiers) {
@@ -237,14 +237,14 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [buildModifiers]);
 
   const baseDamageThreshold = useMemo(() => {
-    if (character) {
-      return 8 + 3 * character.stats.vit + character.stats.phy;
+    if (sheet) {
+      return 8 + 3 * sheet.stats.vit + sheet.stats.phy;
     }
     return 11;
-  }, [character?.stats]);
+  }, [sheet?.stats]);
 
   const damageThresholds = useMemo(() => {
-    if (character && baseDamageThreshold && buildModifiers) {
+    if (sheet && baseDamageThreshold && buildModifiers) {
       return {
         trivialMax:
           Math.floor(baseDamageThreshold * 0.25) +
@@ -271,63 +271,72 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     return { label: "", detail: "" };
   }, []);
 
-  const getCharacter = async (characterUID: string) => {
-    fetch(`/api/characters/${characterUID}`)
+  const getSheet = async (sheetUID: string) => {
+    fetch(`/api/sheets/${sheetUID}`)
       .then((res) => res.json())
       .then((data) => {
-        setCharacter(data);
+        setSheet(data);
         setIsLoading(false);
       })
       .catch((err) => console.log(err));
   };
 
   const handleSpendAp = (cost: number) => {
-    if (cost <= 0 || !character) {
+    if (cost <= 0 || !sheet) {
       return;
     }
 
     const { nextAp, nextResilience } = spendAP(
       cost,
-      character.actionPoints,
-      character.resilienceCurrent
+      sheet.character.actionPoints,
+      sheet.character.resilienceCurrent
     );
 
-    setCharacter({
-      ...character,
-      resilienceCurrent: nextResilience,
-      actionPoints: nextAp,
+    setSheet({
+      ...sheet,
+      character: {
+        ...sheet.character,
+        resilienceCurrent: nextResilience,
+        actionPoints: nextAp,
+      },
     });
   };
 
   const handleSpendWard = (cost: number) => {
-    if (Number.isNaN(cost) || cost <= 0 || !character) {
+    if (Number.isNaN(cost) || cost <= 0 || !sheet) {
       return;
     }
 
-    setCharacter({
-      ...character,
-      wardCurrent: Math.min(0, character.wardCurrent - cost),
+    setSheet({
+      ...sheet,
+      character: {
+        ...sheet.character,
+        wardCurrent: Math.min(0, sheet.character.wardCurrent - cost),
+      },
     });
   };
 
   const handleRefillWard = () => {
-    if (!character || !maxWard) {
+    if (!sheet || !maxWard) {
       return;
     }
 
-    setCharacter({
-      ...character,
-      wardCurrent: Math.min(maxWard, 20),
+    setSheet({
+      ...sheet,
+      character: {
+        ...sheet.character,
+        wardCurrent: Math.min(maxWard, 20),
+      },
     });
   };
 
   const handleResilienceDecrease = () => {
-    if (!character) {
+    if (!sheet) {
       return;
     }
 
-    let resilience = character.resilienceCurrent;
-    let reserves = character.resilienceReserves;
+    let resilience = sheet.character.resilienceCurrent;
+    let reserves = sheet.character.resilienceReserves;
 
     if (reserves > 0) {
       reserves = Math.max(0, reserves - 1);
@@ -335,50 +344,71 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       resilience -= 1;
     }
 
-    setCharacter({
-      ...character,
-      resilienceCurrent: resilience,
-      resilienceReserves: reserves,
+    setSheet({
+      ...sheet,
+      character: {
+        ...sheet.character,
+        resilienceCurrent: resilience,
+        resilienceReserves: reserves,
+      },
     });
   };
 
   const handleResilienceIncrease = (value?: number) => {
-    if (!character || !effectiveResilience) {
+    if (!sheet || !effectiveResilience) {
       return;
     }
     if (value) {
-      setCharacter({ ...character, resilienceCurrent: value });
+      setSheet({
+        ...sheet,
+        character: {
+          ...sheet.character,
+          resilienceCurrent: value,
+        },
+      });
     } else {
       const increasedResilience = Math.min(
-        character.resilienceCurrent + 1,
+        sheet.character.resilienceCurrent + 1,
         effectiveResilience
       );
-      setCharacter({ ...character, resilienceCurrent: increasedResilience });
+      setSheet({
+        ...sheet,
+        character: {
+          ...sheet.character,
+          resilienceCurrent: increasedResilience,
+        },
+      });
     }
   };
 
   const handleReservesIncrease = () => {
-    if (!character || !maxResilience) {
+    if (!sheet || !maxResilience) {
       return;
     }
 
-    if (character.resilienceReserves >= maxReserves) {
+    if (sheet.character.resilienceReserves >= maxReserves) {
       return;
     }
 
     const increasedReserves = getIncreasedReserves(
-      character.resilienceReserves,
+      sheet.character.resilienceReserves,
       maxResilience
     );
-    setCharacter({ ...character, resilienceReserves: increasedReserves });
+    setSheet({
+      ...sheet,
+      character: {
+        ...sheet.character,
+        resilienceReserves: increasedReserves,
+      },
+    });
   };
 
   const handleHealWound = (woundId: number) => {
-    if (!character || !maxResilience) {
+    if (!sheet || !maxResilience) {
       return;
     }
 
-    const wound = character.wounds.find((wound) => wound.id === woundId);
+    const wound = sheet.wounds.find((wound) => wound.id === woundId);
 
     if (!wound) {
       return;
@@ -395,8 +425,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       })
         .then((res) => res.json())
         .then((data) => {
-          setCharacter({
-            ...character,
+          setSheet({
+            ...sheet,
             wounds: data,
           });
         });
@@ -412,8 +442,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         .then((res) => res.json())
         .then((data) => {
           const severityDelta = wound.severity - healed.severity;
-          setCharacter({
-            ...character,
+          setSheet({
+            ...sheet,
             wounds: data,
           });
         });
@@ -421,7 +451,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleApplyDamage = (damageAmount: number, damageType: string) => {
-    if (!character || !maxResilience || !damageThresholds) {
+    if (!sheet || !maxResilience || !damageThresholds) {
       return;
     }
 
@@ -438,7 +468,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     const body: PostWoundBody = {
       threshold,
       damageType,
-      characterUID: character?.characterUID,
+      characterUID: sheet?.character.characterUID,
     };
 
     fetch("/api/wounds", {
@@ -451,22 +481,25 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       .then((res) => res.json())
       .then((data) => {
         const newResilienceCurrent = Math.min(
-          character.resilienceCurrent - data.severity,
+          sheet.character.resilienceCurrent - data.severity,
           effectiveResilience
         );
-        setCharacter({
-          ...character,
-          wounds: [...character.wounds, data],
-          resilienceCurrent: newResilienceCurrent,
+        setSheet({
+          ...sheet,
+          wounds: [...sheet.wounds, data],
+          character: {
+            ...sheet.character,
+            resilienceCurrent: newResilienceCurrent,
+          },
         });
       });
   };
 
   const values = {
-    character,
+    sheet,
     isLoading,
-    setCharacter,
-    getCharacter,
+    setSheet,
+    getSheet,
     handlers: {
       handleSpendAp,
       handleSpendWard,

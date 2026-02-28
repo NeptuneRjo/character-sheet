@@ -5,14 +5,13 @@ import { getBarColorClass, getBarState, getCurrentEffect } from "@/lib/utils";
 import { useContext } from "react";
 
 const Resilience = () => {
-  const { character, isLoading, modifiers, handlers } =
-    useContext(SheetContext);
+  const { sheet, isLoading, modifiers, handlers } = useContext(SheetContext);
 
-  if (!character || isLoading) {
+  if (!sheet || isLoading) {
     return <div>loading...</div>;
   }
 
-  const { resilienceCurrent, resilienceReserves } = character;
+  const { resilienceCurrent, resilienceReserves } = sheet.character;
   const { maxResilience, maxReserves, effectiveResilience } = modifiers;
   const {
     handleResilienceDecrease,

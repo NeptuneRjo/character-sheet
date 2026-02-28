@@ -121,10 +121,10 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
     } = cv;
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
-    if (acc["characterUID"] !== characters!.characterUID) {
+    if (acc.character["characterUID"] !== characters!.characterUID) {
       // const { id, ...rest } = characters!;
       acc = {
-        ...characters,
+        character: characters,
         traits: [],
         stats: {} as Stats,
         wounds: [],
@@ -256,10 +256,10 @@ export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
     const { characters, stats, wounds, equipment, skills } = cv;
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
-    if (acc["characterUID"] !== characters!.characterUID) {
+    if (acc.character["characterUID"] !== characters!.characterUID) {
       // const { id, ...rest } = characters!;
       acc = {
-        ...characters,
+        character: characters,
         stats: {} as Stats,
         wounds: [],
         equipment: [],
