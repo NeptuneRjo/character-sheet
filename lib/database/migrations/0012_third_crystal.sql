@@ -1,0 +1,1 @@
+ALTER TABLE "characters" ADD COLUMN "baseMoveSpeed" smallint DEFAULT 5 NOT NULL;
