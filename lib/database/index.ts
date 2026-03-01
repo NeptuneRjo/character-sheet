@@ -1,7 +1,13 @@
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/neon-http";
-import { neon } from "@neondatabase/serverless";
 
-const sql = neon(process.env.DATABASE_URL!);
-// use 'db' to query the database
-export const db = drizzle(sql);
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+
+let connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is undefined in .env");
+}
+
+// Disable prefetch as it is not supported for "Transaction" pool mode
+export const client = postgres(connectionString, { prepare: false });
+export const db = drizzle(client);
