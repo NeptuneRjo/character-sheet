@@ -1,11 +1,12 @@
 "use client";
 
-import { createContext, ReactNode, useMemo, useState } from "react";
+import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 import {
   DamageThresholds,
   PostWoundBody,
   Sheet,
   SheetContextType,
+  Wound,
 } from "../types";
 import {
   getHealedWound,
@@ -13,6 +14,7 @@ import {
   getIncreasedResilience,
   spendAP,
 } from "../utils";
+import { supabase } from "../supabaseClient";
 
 const initializationError = (func: string) => {
   throw new Error(`${func} was called before SheetContext was initialized`);
@@ -104,16 +106,16 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const maxReserves = useMemo(() => {
     if (maxResilience && sheet) {
       return Math.max(
-        sheet.character.resilienceReserves,
+        sheet.character.resilience_reserves,
         Math.floor(maxResilience / 3)
       );
     }
     return 0;
-  }, [maxResilience, sheet?.character.resilienceReserves]);
+  }, [maxResilience, sheet?.character?.resilience_reserves]);
 
   const buildModifiers = useMemo(() => {
     if (sheet) {
-      switch (sheet.character.physicalBuild) {
+      switch (sheet.character.physical_build) {
         case "Lithe":
           return {
             hitclassBonus: 2,
@@ -159,21 +161,21 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       grappleOffense: 0,
       force: 0,
     };
-  }, [sheet?.character.physicalBuild]);
+  }, [sheet?.character?.physical_build]);
 
   const penalties = useMemo(() => {
     if (sheet && maxResilience) {
-      const { resilienceCurrent } = sheet.character;
+      const { resilience_current } = sheet.character;
       let movementPenalty = 0;
       let statPenalty = 0;
 
-      if (maxResilience > 0 && resilienceCurrent < maxResilience / 2) {
+      if (maxResilience > 0 && resilience_current < maxResilience / 2) {
         movementPenalty = 1;
       }
-      if (maxResilience > 0 && resilienceCurrent < maxResilience / 4) {
+      if (maxResilience > 0 && resilience_current < maxResilience / 4) {
         statPenalty = 1;
       }
-      if (maxResilience > 0 && resilienceCurrent < maxResilience / 8) {
+      if (maxResilience > 0 && resilience_current < maxResilience / 8) {
         movementPenalty = 2;
         statPenalty = 2;
       }
@@ -184,7 +186,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       movementPenalty: 0,
       statPenalty: 0,
     };
-  }, [maxResilience, sheet?.character.resilienceCurrent]);
+  }, [maxResilience, sheet?.character?.resilience_current]);
 
   const effectivePhysicality = useMemo(() => {
     if (sheet && penalties) {
@@ -195,14 +197,14 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   const reactionPhysicalityBonus = useMemo(() => {
     if (sheet && effectivePhysicality) {
-      const { physicalBuild } = sheet.character;
+      const { physical_build } = sheet.character;
       const multiplier =
-        physicalBuild === "Lithe" ? 1 : physicalBuild === "Average" ? 0.5 : 0;
+        physical_build === "Lithe" ? 1 : physical_build === "Average" ? 0.5 : 0;
 
       return Math.floor(effectivePhysicality * multiplier);
     }
     return 0;
-  }, [sheet?.character.physicalBuild, effectivePhysicality]);
+  }, [sheet?.character?.physical_build, effectivePhysicality]);
 
   const maxWard = useMemo(() => {
     if (sheet) {
@@ -271,8 +273,100 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     return { label: "", detail: "" };
   }, []);
 
+  const addWound = (wound: Wound): void => {
+    if (!sheet) {
+      return;
+    }
+    const newresilience_current = Math.min(
+      sheet.character.resilience_current - wound.severity,
+      effectiveResilience
+    );
+    setSheet({
+      ...sheet,
+      wounds: [...sheet.wounds, wound],
+      character: {
+        ...sheet.character,
+        resilience_current: newresilience_current,
+      },
+    });
+  };
+
+  const healWound = (wound: Wound, fullHealed: boolean) => {
+    if (!sheet) {
+      return;
+    }
+
+    const indexToRemove = sheet?.wounds.findIndex(
+      (item) => item.id === wound.id
+    );
+    const newWounds: Wound[] = [];
+
+    if (indexToRemove === -1) {
+      return;
+    }
+
+    if (fullHealed) {
+      const filtered = sheet.wounds.filter(
+        (_, index) => index !== indexToRemove
+      );
+      newWounds.push(...filtered);
+    } else {
+      const copy = [...sheet.wounds];
+      copy[indexToRemove] = wound;
+      newWounds.push(...copy);
+    }
+
+    setSheet({
+      ...sheet,
+      wounds: newWounds,
+    });
+  };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("wounds")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "wounds",
+        },
+        (payload) => {
+          switch (payload.eventType) {
+            case "INSERT":
+              if (payload.new.character_id === sheet?.character?.id) {
+                addWound(payload.new as Wound);
+                break;
+              }
+              break;
+            case "UPDATE":
+              if (payload.new.character_id === sheet?.character?.id) {
+                healWound(payload.new as Wound, false);
+                break;
+              }
+              break;
+            case "DELETE":
+              if (payload.old.character_id === sheet?.character?.id) {
+                console.log("delete");
+                healWound(payload.old as Wound, true);
+                break;
+              }
+              break;
+            default:
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase, sheet, setSheet]);
+
   const getSheet = async (sheetUID: string) => {
-    fetch(`/api/sheets/${sheetUID}`)
+    fetch(`/api/characters/${sheetUID}`)
       .then((res) => res.json())
       .then((data) => {
         setSheet(data);
@@ -288,16 +382,16 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
     const { nextAp, nextResilience } = spendAP(
       cost,
-      sheet.character.actionPoints,
-      sheet.character.resilienceCurrent
+      sheet.character.action_points,
+      sheet.character.resilience_current
     );
 
     setSheet({
       ...sheet,
       character: {
         ...sheet.character,
-        resilienceCurrent: nextResilience,
-        actionPoints: nextAp,
+        resilience_current: nextResilience,
+        action_points: nextAp,
       },
     });
   };
@@ -311,7 +405,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       ...sheet,
       character: {
         ...sheet.character,
-        wardCurrent: Math.min(0, sheet.character.wardCurrent - cost),
+        ward_current: Math.min(0, sheet.character.ward_current - cost),
       },
     });
   };
@@ -325,7 +419,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       ...sheet,
       character: {
         ...sheet.character,
-        wardCurrent: Math.min(maxWard, 20),
+        ward_current: Math.min(maxWard, 20),
       },
     });
   };
@@ -335,8 +429,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    let resilience = sheet.character.resilienceCurrent;
-    let reserves = sheet.character.resilienceReserves;
+    let resilience = sheet.character.resilience_current;
+    let reserves = sheet.character.resilience_reserves;
 
     if (reserves > 0) {
       reserves = Math.max(0, reserves - 1);
@@ -348,8 +442,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       ...sheet,
       character: {
         ...sheet.character,
-        resilienceCurrent: resilience,
-        resilienceReserves: reserves,
+        resilience_current: resilience,
+        resilience_reserves: reserves,
       },
     });
   };
@@ -363,19 +457,19 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         ...sheet,
         character: {
           ...sheet.character,
-          resilienceCurrent: value,
+          resilience_current: value,
         },
       });
     } else {
       const increasedResilience = Math.min(
-        sheet.character.resilienceCurrent + 1,
+        sheet.character.resilience_current + 1,
         effectiveResilience
       );
       setSheet({
         ...sheet,
         character: {
           ...sheet.character,
-          resilienceCurrent: increasedResilience,
+          resilience_current: increasedResilience,
         },
       });
     }
@@ -386,19 +480,19 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    if (sheet.character.resilienceReserves >= maxReserves) {
+    if (sheet.character.resilience_reserves >= maxReserves) {
       return;
     }
 
     const increasedReserves = getIncreasedReserves(
-      sheet.character.resilienceReserves,
+      sheet.character.resilience_reserves,
       maxResilience
     );
     setSheet({
       ...sheet,
       character: {
         ...sheet.character,
-        resilienceReserves: increasedReserves,
+        resilience_reserves: increasedReserves,
       },
     });
   };
@@ -422,14 +516,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           "Content-Type": "application/json",
         },
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setSheet({
-            ...sheet,
-            wounds: data,
-          });
-        });
+      });
       return;
     } else {
       fetch(`/api/wounds/${woundId}`, {
@@ -438,15 +525,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(healed),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          const severityDelta = wound.severity - healed.severity;
-          setSheet({
-            ...sheet,
-            wounds: data,
-          });
-        });
+      });
     }
   };
 
@@ -468,7 +547,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     const body: PostWoundBody = {
       threshold,
       damageType,
-      characterUID: sheet?.character.characterUID,
+      characterUID: sheet?.character?.character_uid,
     };
 
     fetch("/api/wounds", {
@@ -477,22 +556,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       headers: {
         "Content-Type": "application/json",
       },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        const newResilienceCurrent = Math.min(
-          sheet.character.resilienceCurrent - data.severity,
-          effectiveResilience
-        );
-        setSheet({
-          ...sheet,
-          wounds: [...sheet.wounds, data],
-          character: {
-            ...sheet.character,
-            resilienceCurrent: newResilienceCurrent,
-          },
-        });
-      });
+    });
   };
 
   const values = {
