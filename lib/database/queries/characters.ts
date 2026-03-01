@@ -2,6 +2,7 @@ import {
   Character,
   CharacterSkill,
   Equipment,
+  InsCharacter,
   Panel,
   Sheet,
   Skill,
@@ -121,10 +122,11 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
     } = cv;
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
-    if (acc.character["characterUID"] !== characters!.characterUID) {
+    // doesn't work if there is no optional (?) chaining
+    if (acc?.character?.characterUID !== characters!.characterUID) {
       // const { id, ...rest } = characters!;
       acc = {
-        character: characters,
+        character: {} as Character,
         traits: [],
         stats: {} as Stats,
         wounds: [],
@@ -133,6 +135,10 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
         reactions: [],
         actions: [],
       };
+    }
+
+    if (characters) {
+      acc.character = characters;
     }
 
     if (traits) {
@@ -188,7 +194,6 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
         acc.skills.push(skills);
       }
     }
-
     return acc;
   }, {} as any);
 
@@ -309,4 +314,22 @@ export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
 /**
  * Update and retrieve a character.
  */
-// export const updateCharacter = async (): Promise<Character> => {};
+export const updateCharacter = async (
+  characterUID: string,
+  update: Character
+): Promise<Character> => {
+  const updated = await db
+    .update(characters)
+    .set(update)
+    .where(eq(characters.characterUID, characterUID))
+    .returning();
+
+  if (!updated[0]) {
+    throw new Error(
+      `The character with characterUID ${characterUID} was not updated`
+    );
+  }
+
+  // should be the updated character
+  return updated[0];
+};
