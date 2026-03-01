@@ -34,48 +34,48 @@ export const getCharacters = async (): Promise<Character[]> => {
 /**
  * Retrieves individual character.
  */
-export const getCharacter = async (characterUID: string): Promise<Sheet> => {
+export const getCharacter = async (character_uid: string): Promise<Sheet> => {
   const traitsSubquery = db
     .select()
     .from(traits)
-    .where(eq(traits.characterId, characters.id))
+    .where(eq(traits.character_id, characters.id))
     .as("traits");
   const statsSubquery = db
     .select()
     .from(stats)
-    .where(eq(stats.characterId, characters.id))
+    .where(eq(stats.character_id, characters.id))
     .as("stats");
   const woundsSubquery = db
     .select()
     .from(wounds)
-    .where(eq(wounds.characterId, characters.id))
+    .where(eq(wounds.character_id, characters.id))
     .as("wounds");
   const equipmentSubquery = db
     .select()
     .from(equipment)
-    .where(eq(equipment.characterId, characters.id))
+    .where(eq(equipment.character_id, characters.id))
     .as("equipment");
   const actionsSubquery = db
     .select()
     .from(actions)
-    .where(eq(actions.characterId, characters.id))
+    .where(eq(actions.character_id, characters.id))
     .as("actions");
   const reactionsSubquery = db
     .select()
     .from(reactions)
-    .where(eq(reactions.characterId, characters.id))
+    .where(eq(reactions.character_id, characters.id))
     .as("reactions");
   const skillsSubquery = db
     .select({
       skills,
-      skillId: characterSkills.skillId,
-      characterId: characterSkills.characterId,
-      flatModifier: characterSkills.flatModifier,
-      bonusDice: characterSkills.bonusDice,
+      skill_id: characterSkills.skill_id,
+      character_id: characterSkills.character_id,
+      flat_modifier: characterSkills.flat_modifier,
+      bonus_dice: characterSkills.bonus_dice,
     })
     .from(characterSkills)
-    .leftJoin(skills, eq(characterSkills.skillId, skills.id))
-    .where(eq(characterSkills.characterId, characters.id))
+    .leftJoin(skills, eq(characterSkills.skill_id, skills.id))
+    .where(eq(characterSkills.character_id, characters.id))
     .as("skills");
 
   const query = await db
@@ -92,10 +92,10 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
         name: skills.name,
         ability: skills.ability,
         utility: skills.utility,
-        skillId: skillsSubquery.skillId,
-        characterId: skillsSubquery.characterId,
-        flatModifier: skillsSubquery.flatModifier,
-        bonusDice: skillsSubquery.bonusDice,
+        skill_id: skillsSubquery.skill_id,
+        character_id: skillsSubquery.character_id,
+        flat_modifier: skillsSubquery.flat_modifier,
+        bonus_dice: skillsSubquery.bonus_dice,
       },
     })
     .from(characters)
@@ -106,7 +106,7 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
     .leftJoinLateral(actionsSubquery, sql`true`)
     .leftJoinLateral(reactionsSubquery, sql`true`)
     .leftJoinLateral(skillsSubquery, sql`true`)
-    .where(eq(characters.characterUID, characterUID));
+    .where(eq(characters.character_uid, character_uid));
 
   const result = query.reduce<Sheet>((acc, cv) => {
     // the objects for this iteration
@@ -123,7 +123,7 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
     // doesn't work if there is no optional (?) chaining
-    if (acc?.character?.characterUID !== characters!.characterUID) {
+    if (acc?.character?.character_uid !== characters!.character_uid) {
       // const { id, ...rest } = characters!;
       acc = {
         character: {} as Character,
@@ -203,33 +203,35 @@ export const getCharacter = async (characterUID: string): Promise<Sheet> => {
 /**
  * Retrieve the character for the GM-Panel
  */
-export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
+export const getGMCharacters = async (
+  character_uid: string
+): Promise<Panel> => {
   const statsSubquery = db
     .select()
     .from(stats)
-    .where(eq(stats.characterId, characters.id))
+    .where(eq(stats.character_id, characters.id))
     .as("stats");
   const woundsSubquery = db
     .select()
     .from(wounds)
-    .where(eq(wounds.characterId, characters.id))
+    .where(eq(wounds.character_id, characters.id))
     .as("wounds");
   const equipmentSubquery = db
     .select()
     .from(equipment)
-    .where(eq(equipment.characterId, characters.id))
+    .where(eq(equipment.character_id, characters.id))
     .as("equipment");
   const skillsSubquery = db
     .select({
       skills,
-      skillId: characterSkills.skillId,
-      characterId: characterSkills.characterId,
-      flatModifier: characterSkills.flatModifier,
-      bonusDice: characterSkills.bonusDice,
+      skill_id: characterSkills.skill_id,
+      character_id: characterSkills.character_id,
+      flat_modifier: characterSkills.flat_modifier,
+      bonus_dice: characterSkills.bonus_dice,
     })
     .from(characterSkills)
-    .leftJoin(skills, eq(characterSkills.skillId, skills.id))
-    .where(eq(characterSkills.characterId, characters.id))
+    .leftJoin(skills, eq(characterSkills.skill_id, skills.id))
+    .where(eq(characterSkills.character_id, characters.id))
     .as("skills");
 
   const query = await db
@@ -243,10 +245,10 @@ export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
         name: skills.name,
         ability: skills.ability,
         utility: skills.utility,
-        skillId: skillsSubquery.skillId,
-        characterId: skillsSubquery.characterId,
-        flatModifier: skillsSubquery.flatModifier,
-        bonusDice: skillsSubquery.bonusDice,
+        skill_id: skillsSubquery.skill_id,
+        character_id: skillsSubquery.character_id,
+        flat_modifier: skillsSubquery.flat_modifier,
+        bonus_dice: skillsSubquery.bonus_dice,
       },
     })
     .from(characters)
@@ -254,14 +256,14 @@ export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
     .leftJoinLateral(woundsSubquery, sql`true`)
     .leftJoinLateral(equipmentSubquery, sql`true`)
     .leftJoinLateral(skillsSubquery, sql`true`)
-    .where(eq(characters.characterUID, characterUID));
+    .where(eq(characters.character_uid, character_uid));
 
   const result = query.reduce<Panel>((acc, cv) => {
     // the objects for this iteration
     const { characters, stats, wounds, equipment, skills } = cv;
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
-    if (acc.character["characterUID"] !== characters!.characterUID) {
+    if (acc.character["character_uid"] !== characters!.character_uid) {
       // const { id, ...rest } = characters!;
       acc = {
         character: characters,
@@ -315,18 +317,18 @@ export const getGMCharacters = async (characterUID: string): Promise<Panel> => {
  * Update and retrieve a character.
  */
 export const updateCharacter = async (
-  characterUID: string,
+  character_uid: string,
   update: Character
 ): Promise<Character> => {
   const updated = await db
     .update(characters)
     .set(update)
-    .where(eq(characters.characterUID, characterUID))
+    .where(eq(characters.character_uid, character_uid))
     .returning();
 
   if (!updated[0]) {
     throw new Error(
-      `The character with characterUID ${characterUID} was not updated`
+      `The character with character_uid ${character_uid} was not updated`
     );
   }
 

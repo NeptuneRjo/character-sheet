@@ -13,20 +13,20 @@ export const characters = pgTable(
   "characters",
   {
     id: serial("id").primaryKey(),
-    resilienceCurrent: smallint("resilience_current").notNull().default(0),
-    resilienceReserves: smallint("resilience_reserves").notNull().default(1),
-    actionPoints: smallint("action_points").notNull().default(4),
-    wardCurrent: smallint("ward_current").notNull().default(0),
-    physicalBuild: text("physical_build").notNull(),
+    resilience_current: smallint("resilience_current").notNull().default(0),
+    resilience_reserves: smallint("resilience_reserves").notNull().default(1),
+    action_points: smallint("action_points").notNull().default(4),
+    ward_current: smallint("ward_current").notNull().default(0),
+    physical_build: text("physical_build").notNull(),
     baseMoveSpeed: smallint().notNull().default(5),
     name: text().notNull().default("john"),
     isCaster: boolean().notNull().default(false),
-    characterUID: text("character_uid").notNull().unique(),
+    character_uid: text("character_uid").notNull().unique(),
   },
   (table) => [
     check(
       "ck_phys_build",
-      sql`${table.physicalBuild} IN ('Lithe', 'Average', 'Hulking')`
+      sql`${table.physical_build} IN ('Lithe', 'Average', 'Hulking')`
     ),
   ]
 );
@@ -51,7 +51,7 @@ export const wounds = pgTable(
     name: text().notNull(),
     tier: text().notNull().default("Trivial"),
     severity: smallint().notNull().default(0),
-    characterId: integer("character_id").references(() => characters.id, {
+    character_id: integer("character_id").references(() => characters.id, {
       onDelete: "cascade",
     }),
   },
@@ -65,7 +65,7 @@ export const traits = pgTable("traits", {
   id: serial("id").primaryKey(),
   name: text().notNull(),
   description: text().notNull(),
-  characterId: integer("character_id").references(() => characters.id, {
+  character_id: integer("character_id").references(() => characters.id, {
     onDelete: "cascade",
   }),
 });
@@ -75,7 +75,7 @@ export const equipment = pgTable("equipment", {
   name: text().notNull(),
   description: text().notNull(),
   quantity: smallint().notNull().default(0),
-  characterId: integer("character_id").references(() => characters.id, {
+  character_id: integer("character_id").references(() => characters.id, {
     onDelete: "cascade",
   }),
 });
@@ -88,25 +88,25 @@ export const stats = pgTable("stats", {
   wil: smallint().notNull().default(0),
   acu: smallint().notNull().default(0),
   pre: smallint().notNull().default(0),
-  characterId: integer("character_id").references(() => characters.id, {
+  character_id: integer("character_id").references(() => characters.id, {
     onDelete: "cascade",
   }),
 });
 
 export const characterSkills = pgTable("character_skills", {
-  characterId: integer("character_id")
+  character_id: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
-  skillId: smallint("skill_id")
+  skill_id: smallint("skill_id")
     .notNull()
     .references(() => skills.id, { onDelete: "cascade" }),
-  flatModifier: smallint("flat_modifier").notNull().default(0),
-  bonusDice: text("bonus_dice").notNull().default("1d4"),
+  flat_modifier: smallint("flat_modifier").notNull().default(0),
+  bonus_dice: text("bonus_dice").notNull().default("1d4"),
 });
 
 export const actions = pgTable("actions", {
   id: serial("id").primaryKey(),
-  characterId: integer("character_id")
+  character_id: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
@@ -117,7 +117,7 @@ export const actions = pgTable("actions", {
 
 export const reactions = pgTable("reactions", {
   id: serial("id").primaryKey(),
-  characterId: integer("character_id")
+  character_id: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),

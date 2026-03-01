@@ -10,7 +10,7 @@ const Header = () => {
     return <div>loading...</div>;
   }
 
-  const { name, physicalBuild } = sheet.character;
+  const { name, physical_build } = sheet.character;
   const { carryCapacityKg, hitClass } = modifiers;
 
   return (
@@ -35,7 +35,7 @@ const Header = () => {
             Physical Build
           </p>
           <p className="text-lg font-semibold text-[#f0d9a8]">
-            {physicalBuild}
+            {physical_build}
           </p>
         </div>
         <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-4 py-3 text-right">

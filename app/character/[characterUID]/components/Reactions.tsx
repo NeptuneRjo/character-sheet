@@ -12,7 +12,7 @@ const Reactions = () => {
   }
 
   const { reactions, character } = sheet;
-  const { wardCurrent, isCaster } = character;
+  const { ward_current, isCaster } = character;
   const { maxWard, reactionPhysicalityBonus } = modifiers;
   const { handleRefillWard, handleSpendAp, handleSpendWard } = handlers;
 
@@ -91,7 +91,7 @@ const Reactions = () => {
                 Ward to 20
               </button>
               <span className="text-lg font-semibold text-[#f0d9a8]">
-                {maxWard && Math.min(wardCurrent, maxWard)}
+                {maxWard && Math.min(ward_current, maxWard)}
               </span>
               <span className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
                 / {maxWard}

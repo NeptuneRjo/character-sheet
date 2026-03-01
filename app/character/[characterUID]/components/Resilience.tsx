@@ -11,7 +11,7 @@ const Resilience = () => {
     return <div>loading...</div>;
   }
 
-  const { resilienceCurrent, resilienceReserves } = sheet.character;
+  const { resilience_current, resilience_reserves } = sheet.character;
   const { maxResilience, maxReserves, effectiveResilience } = modifiers;
   const {
     handleResilienceDecrease,
@@ -19,17 +19,17 @@ const Resilience = () => {
     handleReservesIncrease,
   } = handlers;
 
-  const barColorClass = getBarColorClass(maxResilience, resilienceCurrent);
+  const barColorClass = getBarColorClass(maxResilience, resilience_current);
   const barState = getBarState(
     maxResilience,
-    resilienceCurrent,
-    resilienceReserves,
+    resilience_current,
+    resilience_reserves,
     maxReserves
   );
 
   const currentEffect = getCurrentEffect(
     effectiveResilience,
-    resilienceCurrent
+    resilience_current
   );
 
   return (
@@ -49,7 +49,7 @@ const Resilience = () => {
             </button>
             <input
               type="number"
-              value={resilienceCurrent}
+              value={resilience_current}
               onChange={(event) =>
                 handleResilienceIncrease(Number(event.target.value))
               }
@@ -92,7 +92,7 @@ const Resilience = () => {
         <div className="flex flex-wrap items-center gap-3 text-sm text-[#b7a387]">
           <span>Resilience Reserves:</span>
           <span className="rounded-full border border-[#8b6a3f] px-3 py-1 text-xs font-semibold text-[#f0d9a8]">
-            {resilienceReserves}
+            {resilience_reserves}
           </span>
           <span className="text-xs text-[#8b6a3f]">/ {maxReserves}</span>
           <button

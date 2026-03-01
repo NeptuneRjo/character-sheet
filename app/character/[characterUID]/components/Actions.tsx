@@ -11,7 +11,7 @@ const Actions = () => {
   }
 
   const { character, actions } = sheet;
-  const { actionPoints } = character;
+  const { action_points } = character;
   const { effectiveMoveSpeed } = modifiers;
   const { handleSpendAp } = handlers;
 
@@ -45,13 +45,13 @@ const Actions = () => {
           <div
             key={index}
             className={`h-4 w-4 rounded-full border border-[#8b6a3f] ${
-              index < actionPoints ? "bg-[#f0d9a8]" : "bg-[#19130d]"
+              index < action_points ? "bg-[#f0d9a8]" : "bg-[#19130d]"
             }`}
           />
         ))}
       </div>
       <p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-        {actionPoints} / 4
+        {action_points} / 4
       </p>
       <div className="mt-4 grid gap-2 text-sm text-[#f0e4cf]">
         {defaultActions.map((action, key) => (

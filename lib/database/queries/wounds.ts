@@ -7,7 +7,7 @@ export const insertWound = async (charUID: string, wound: InsWound) => {
   const parent = await db
     .select()
     .from(characters)
-    .where(eq(characters.characterUID, charUID));
+    .where(eq(characters.character_uid, charUID));
 
   if (!parent[0]) {
     throw new Error(`Unable to find a charater with the UID: ${charUID}`);
@@ -15,7 +15,7 @@ export const insertWound = async (charUID: string, wound: InsWound) => {
 
   const query = await db
     .insert(wounds)
-    .values({ ...wound, characterId: parent[0].id })
+    .values({ ...wound, character_id: parent[0].id })
     .returning();
 
   return query[0];
@@ -35,7 +35,7 @@ export const deleteWound = async (woundId: number) => {
   const query = await db
     .select()
     .from(wounds)
-    .where(eq(wounds.characterId, deleted[0].characterId!));
+    .where(eq(wounds.character_id, deleted[0].character_id!));
 
   return query;
 };
@@ -54,7 +54,7 @@ export const updateWound = async (woundId: number, woundUpdate: Wound) => {
   const query = await db
     .select()
     .from(wounds)
-    .where(eq(wounds.characterId, updated[0].characterId!));
+    .where(eq(wounds.character_id, updated[0].character_id!));
 
   return query;
 };
