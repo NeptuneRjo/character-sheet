@@ -33,7 +33,7 @@ const Stats = () => {
     return !(
       stat === null ||
       stat.toLowerCase() === "id" ||
-      stat.toLowerCase() === "characterid"
+      stat.toLowerCase() === "character_id"
     );
   };
 
