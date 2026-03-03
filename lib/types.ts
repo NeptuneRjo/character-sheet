@@ -169,7 +169,7 @@ export type PanelContextType = {
     effectiveMoveSpeed: number;
   };
   setters: {
-    setMoveSpeed: () => void;
+    setMoveSpeed: (characterUID: string, newBaseSpeed: number) => void;
     setActionPoints: () => void;
     setResilienceReserves: () => void;
     setResilienceCurrent: () => void;
@@ -178,4 +178,31 @@ export type PanelContextType = {
   };
   addSkill: () => void;
   addWound: () => void;
+};
+
+const eventTypes = ["INSERT", "UPDATE", "DELETE"] as const;
+const tableTypes = [
+  "characters",
+  "wounds",
+  "traits",
+  "stats",
+  "character_skills",
+  "actions",
+  "equipment",
+  "reactions",
+  "skills",
+] as const;
+
+/**
+ * Defines the structure of the payload being sent via websockets
+ */
+export type Payload = {
+  data: any;
+  event: (typeof eventTypes)[number];
+  table: (typeof tableTypes)[number];
+};
+
+export type RequestBody<t> = {
+  characterUID: string;
+  body: t;
 };
