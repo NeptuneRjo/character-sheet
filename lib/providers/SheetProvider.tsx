@@ -3,15 +3,19 @@
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 import {
   DamageThresholds,
-  PostWoundBody,
+  InsWound,
+  Payload,
+  RequestBody,
   Sheet,
   SheetContextType,
   Wound,
 } from "../types";
 import {
+  createWound,
   getHealedWound,
   getIncreasedReserves,
   getIncreasedResilience,
+  getWoundName,
   spendAP,
 } from "../utils";
 import { supabase } from "../supabaseClient";
@@ -273,91 +277,42 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     return { label: "", detail: "" };
   }, []);
 
-  const addWound = (wound: Wound): void => {
-    if (!sheet) {
-      return;
-    }
-    const newresilience_current = Math.min(
-      sheet.character.resilience_current - wound.severity,
-      effectiveResilience
-    );
-    setSheet({
-      ...sheet,
-      wounds: [...sheet.wounds, wound],
-      character: {
-        ...sheet.character,
-        resilience_current: newresilience_current,
-      },
-    });
-  };
-
-  const healWound = (wound: Wound, fullHealed: boolean) => {
-    if (!sheet) {
-      return;
-    }
-
-    const indexToRemove = sheet?.wounds.findIndex(
-      (item) => item.id === wound.id
-    );
-    const newWounds: Wound[] = [];
-
-    if (indexToRemove === -1) {
-      return;
-    }
-
-    if (fullHealed) {
-      const filtered = sheet.wounds.filter(
-        (_, index) => index !== indexToRemove
-      );
-      newWounds.push(...filtered);
-    } else {
-      const copy = [...sheet.wounds];
-      copy[indexToRemove] = wound;
-      newWounds.push(...copy);
-    }
-
-    setSheet({
-      ...sheet,
-      wounds: newWounds,
-    });
-  };
-
   useEffect(() => {
-    const channel = supabase
-      .channel("wounds")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "wounds",
-        },
-        (payload) => {
-          switch (payload.eventType) {
+    const channel = supabase.channel(
+      `player:${sheet?.character.character_uid}`
+    );
+    channel
+      .on("broadcast", { event: "*" }, ({ payload }) => {
+        const { data, table, event } = payload as Payload;
+        if (!sheet) {
+          return;
+        }
+        if (table === "wounds") {
+          switch (event) {
             case "INSERT":
-              if (payload.new.character_id === sheet?.character?.id) {
-                addWound(payload.new as Wound);
-                break;
-              }
+              const newresilience_current = Math.min(
+                sheet.character.resilience_current - data.severity,
+                effectiveResilience
+              );
+              setSheet({
+                ...sheet,
+                wounds: [...sheet.wounds, data],
+                character: {
+                  ...sheet.character,
+                  resilience_current: newresilience_current,
+                },
+              });
               break;
-            case "UPDATE":
-              if (payload.new.character_id === sheet?.character?.id) {
-                healWound(payload.new as Wound, false);
-                break;
-              }
-              break;
-            case "DELETE":
-              if (payload.old.character_id === sheet?.character?.id) {
-                console.log("delete");
-                healWound(payload.old as Wound, true);
-                break;
-              }
-              break;
+            // UPDATE and DELETE both return the updated list of wounds
             default:
+              setSheet({
+                ...sheet,
+                wounds: data,
+              });
               break;
           }
         }
-      )
+      })
       .subscribe();
 
     return () => {
@@ -509,6 +464,10 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
 
     const healed = getHealedWound(wound);
+    const body: RequestBody<typeof healed> = {
+      characterUID: sheet.character.character_uid,
+      body: healed,
+    };
 
     if (healed === null) {
       fetch(`/api/wounds/${woundId}`, {
@@ -516,6 +475,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(body),
       });
       return;
     } else {
@@ -524,7 +484,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(healed),
+        body: JSON.stringify(body),
       });
     }
   };
@@ -544,10 +504,12 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
     if (threshold === "Deadly") return;
 
-    const body: PostWoundBody = {
-      threshold,
-      damageType,
-      characterUID: sheet?.character?.character_uid,
+    const woundName = getWoundName(threshold, damageType);
+    const wound = createWound(woundName);
+
+    const body: RequestBody<InsWound> = {
+      body: wound,
+      characterUID: sheet.character.character_uid,
     };
 
     fetch("/api/wounds", {
