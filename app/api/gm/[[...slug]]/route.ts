@@ -16,7 +16,7 @@ export async function GET(
   try {
     const characters = await getCharacters();
     const panels = characters.map(async (character) => {
-      const panel = await getGMCharacters(character.characterUID);
+      const panel = await getGMCharacters(character.character_uid);
       return panel;
     });
 
