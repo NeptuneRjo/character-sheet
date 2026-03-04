@@ -218,14 +218,18 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [sheet?.stats]);
 
   const effectiveMoveSpeed = useMemo(() => {
-    if (buildModifiers && penalties) {
+    if (buildModifiers && penalties && sheet) {
       const { movespeedBonus } = buildModifiers;
       const { movementPenalty } = penalties;
+      const { character } = sheet;
 
-      return Math.max(0, 5 + movespeedBonus - movementPenalty);
+      return Math.max(
+        0,
+        character.baseMoveSpeed + movespeedBonus - movementPenalty
+      );
     }
     return 0;
-  }, [buildModifiers, penalties]);
+  }, [buildModifiers, penalties, sheet]);
 
   const carryCapacityKg = useMemo(() => {
     if (sheet && buildModifiers) {
@@ -309,6 +313,25 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
                 ...sheet,
                 wounds: data,
               });
+              break;
+          }
+        }
+        if (table === "stats" && event === "UPDATE") {
+          setSheet({
+            ...sheet,
+            stats: data,
+          });
+        }
+        if (table === "characters") {
+          switch (event) {
+            case "UPDATE":
+              console.log(data);
+              setSheet({
+                ...sheet,
+                character: data,
+              });
+              break;
+            default:
               break;
           }
         }
