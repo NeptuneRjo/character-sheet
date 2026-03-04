@@ -23,14 +23,6 @@ export type Sheet = {
   reactions: Reaction[];
 };
 
-export type Panel = {
-  character: Character;
-  stats: Stats;
-  wounds: Wound[];
-  equipment: Equipment[];
-  skills: CharacterSkill[];
-};
-
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;
 export type InsWound = typeof schema.wounds.$inferInsert;
@@ -87,6 +79,12 @@ const physicalDamageTypes = [
 // Lets us check if a value exists in the damage type list.
 export const PhysicalDamageTypes = physicalDamageTypes as readonly string[];
 export type PhysicalDamage = (typeof physicalDamageTypes)[number];
+
+const statTypes = ["phy", "vit", "sen", "wil", "acu", "pre"] as const;
+
+// Lets us check if a value exists in the damage type list.
+export const StatTypes = statTypes as readonly string[];
+export type StatLabels = (typeof statTypes)[number];
 
 export type CurrentEffect = {
   label: string;
@@ -160,24 +158,26 @@ export type SheetContextType = {
   };
 };
 
-export type PanelContextType = {
-  characters: Panel[];
+export type GMPanelContextType = {
+  characters: Sheet[];
   isLoading: boolean;
   skills: Skill[];
-  getModifiers: (character: Panel) => {
+  getModifiers: (character: Sheet) => {
     maxResilience: number;
     effectiveMoveSpeed: number;
   };
   setters: {
     setMoveSpeed: (characterUID: string, newBaseSpeed: number) => void;
-    setActionPoints: () => void;
-    setResilienceReserves: () => void;
-    setResilienceCurrent: () => void;
-    setPhysicalBuild: () => void;
-    setStats: () => void;
+    setActionPoints: (characterUID: string, value: number) => void;
+    setResilienceReserves: (characterUID: string, value: number) => void;
+    setResilienceCurrent: (characterUID: string, value: number) => void;
+    setPhysicalBuild: (characterUID: string, value: PhysicalBuilds) => void;
+    setStats: (characterUID: string, stat: StatLabels, value: number) => void;
   };
   addSkill: () => void;
   addWound: () => void;
+  getCharacters: () => void;
+  getSkills: () => void;
 };
 
 const eventTypes = ["INSERT", "UPDATE", "DELETE"] as const;
