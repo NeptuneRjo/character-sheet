@@ -3,7 +3,8 @@ import {
   getCharacters,
   updateCharacter,
 } from "@/lib/database/queries";
-import { Character, Sheet } from "@/lib/types";
+import { supabase } from "@/lib/supabaseClient";
+import { Character, Payload, RequestBody, Sheet } from "@/lib/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -32,11 +33,26 @@ export async function PATCH(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  const body: Character = await req.json();
+  const { body, characterUID }: RequestBody<Partial<Character>> =
+    await req.json();
 
   if (slug) {
     try {
       const character = await updateCharacter(slug[0], body);
+
+      const channel = supabase.channel(`player:${characterUID}`);
+      const payload: Payload = {
+        data: character,
+        event: "UPDATE",
+        table: "characters",
+      };
+
+      channel.send({
+        type: "broadcast",
+        event: "shout",
+        payload: payload,
+      });
+
       return NextResponse.json(character, { status: 200 });
     } catch (error) {
       return NextResponse.json({
