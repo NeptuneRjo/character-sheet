@@ -1,14 +1,4 @@
-import {
-  Character,
-  CharacterSkill,
-  Equipment,
-  InsCharacter,
-  Panel,
-  Sheet,
-  Skill,
-  Stats,
-  Wound,
-} from "@/lib/types";
+import { Character, Sheet, Stats } from "@/lib/types";
 import { db } from "../index";
 import {
   actions,
@@ -201,114 +191,6 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
 };
 
 /**
- * Retrieve the character for the GM-Panel
- */
-export const getGMCharacters = async (
-  character_uid: string
-): Promise<Panel> => {
-  const statsSubquery = db
-    .select()
-    .from(stats)
-    .where(eq(stats.character_id, characters.id))
-    .as("stats");
-  const woundsSubquery = db
-    .select()
-    .from(wounds)
-    .where(eq(wounds.character_id, characters.id))
-    .as("wounds");
-  const equipmentSubquery = db
-    .select()
-    .from(equipment)
-    .where(eq(equipment.character_id, characters.id))
-    .as("equipment");
-  const skillsSubquery = db
-    .select({
-      skills,
-      skill_id: characterSkills.skill_id,
-      character_id: characterSkills.character_id,
-      flat_modifier: characterSkills.flat_modifier,
-      bonus_dice: characterSkills.bonus_dice,
-    })
-    .from(characterSkills)
-    .leftJoin(skills, eq(characterSkills.skill_id, skills.id))
-    .where(eq(characterSkills.character_id, characters.id))
-    .as("skills");
-
-  const query = await db
-    .select({
-      characters,
-      stats,
-      wounds,
-      equipment,
-      skills: {
-        id: skills.id,
-        name: skills.name,
-        ability: skills.ability,
-        utility: skills.utility,
-        skill_id: skillsSubquery.skill_id,
-        character_id: skillsSubquery.character_id,
-        flat_modifier: skillsSubquery.flat_modifier,
-        bonus_dice: skillsSubquery.bonus_dice,
-      },
-    })
-    .from(characters)
-    .leftJoinLateral(statsSubquery, sql`true`)
-    .leftJoinLateral(woundsSubquery, sql`true`)
-    .leftJoinLateral(equipmentSubquery, sql`true`)
-    .leftJoinLateral(skillsSubquery, sql`true`)
-    .where(eq(characters.character_uid, character_uid));
-
-  const result = query.reduce<Panel>((acc, cv) => {
-    // the objects for this iteration
-    const { characters, stats, wounds, equipment, skills } = cv;
-
-    // if the last iteration's object is not the same as this iteration's object, create a new object
-    if (acc.character["character_uid"] !== characters!.character_uid) {
-      // const { id, ...rest } = characters!;
-      acc = {
-        character: characters,
-        stats: {} as Stats,
-        wounds: [],
-        equipment: [],
-        skills: [],
-      };
-    }
-
-    if (stats) {
-      acc.stats = stats;
-    }
-
-    if (wounds) {
-      const isDupe = acc.wounds.some((wound) => wound.id === wounds.id);
-
-      if (!isDupe) {
-        acc.wounds.push(wounds);
-      }
-    }
-
-    if (equipment) {
-      const isDupe = acc.equipment.some((item) => item.id === equipment.id);
-
-      if (!isDupe) {
-        acc.equipment.push(equipment);
-      }
-    }
-
-    if (skills && characterSkills) {
-      const isDupe = acc.skills.some((skill) => skill.id === skills.id);
-
-      if (!isDupe) {
-        acc.skills.push(skills);
-      }
-    }
-
-    return acc;
-  }, {} as any);
-
-  return result;
-};
-
-/**
  * Create and retrieve a character.
  */
 // export const createCharacter = async (): Promise<Character> => {};
@@ -318,7 +200,7 @@ export const getGMCharacters = async (
  */
 export const updateCharacter = async (
   character_uid: string,
-  update: Character
+  update: Partial<Character>
 ): Promise<Character> => {
   const updated = await db
     .update(characters)
