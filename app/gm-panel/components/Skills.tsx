@@ -12,20 +12,20 @@ interface Props {
 const Skills = ({ skills, character }: Props) => {
   const { addSkill, removeSkill } = useContext(GMPanelContext);
 
-  const [selectedSkill, setSelectedSkill] = useState<number>(0);
+  const [selectedSkillIndex, setSelectedSkillIndex] = useState<number>(0);
   const [flatModifier, setFlatModifier] = useState<number>(2);
   const [bonusDice, setBonusDice] = useState<string>("1d4");
 
   const handleAddSkill = () => {
     const modifiers: InsCharacterSkill = {
       character_id: character.character.id,
-      skill_id: selectedSkill,
+      skill_id: skills[selectedSkillIndex].id,
       flat_modifier: flatModifier,
       bonus_dice: bonusDice,
     };
     addSkill(
       character.character.character_uid,
-      skills[selectedSkill],
+      skills[selectedSkillIndex],
       modifiers
     );
   };
@@ -44,12 +44,14 @@ const Skills = ({ skills, character }: Props) => {
           <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Skill
             <select
-              value={skills[selectedSkill].name}
-              onChange={(event) => setSelectedSkill(Number(event.target.value))}
+              value={selectedSkillIndex}
+              onChange={(event) =>
+                setSelectedSkillIndex(Number(event.target.value))
+              }
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             >
-              {skills.map(({ name, ability, id }, key) => (
-                <option key={key} value={id}>
+              {skills.map(({ name, ability }, key) => (
+                <option key={key} value={key}>
                   {name} ({ability})
                 </option>
               ))}
