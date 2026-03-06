@@ -15,7 +15,7 @@ const Skills = () => {
   const { buildModifiers } = modifiers;
 
   const hasBuildModifier = (skillName: string) => {
-    let normalizedSkillName = skillName.replace(" ", "").toLowerCase();
+    let normalizedSkillName = skillName?.replace(" ", "").toLowerCase();
 
     for (let key in buildModifiers) {
       if (Object.hasOwn(buildModifiers, key)) {
@@ -32,10 +32,10 @@ const Skills = () => {
         <p className="mt-2 text-sm text-[#b7a387]">None listed.</p>
       ) : (
         <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
-          {skills.map(({ name, bonusDice, flatModifier, ability }) => {
+          {skills.map(({ name, bonus_dice, flat_modifier, ability }, key) => {
             return (
               <li
-                key={name}
+                key={key}
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2"
               >
                 <div>
@@ -45,14 +45,14 @@ const Skills = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-                  {flatModifier !== 0 && (
+                  {flat_modifier !== 0 && (
                     <span className="rounded-full border border-[#5c4a33] px-2 py-1">
                       Flat{" "}
-                      {flatModifier > 0 ? `+${flatModifier}` : flatModifier}
+                      {flat_modifier > 0 ? `+${flat_modifier}` : flat_modifier}
                     </span>
                   )}
                   <span className="rounded-full border border-[#5c4a33] px-2 py-1">
-                    Bonus {bonusDice}
+                    Bonus {bonus_dice}
                   </span>
                   {hasBuildModifier(name) && (
                     <span className="rounded-full border border-[#5c4a33] px-2 py-1">
