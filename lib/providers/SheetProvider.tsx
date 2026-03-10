@@ -287,48 +287,85 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     );
     channel
       .on("broadcast", { event: "*" }, ({ payload }) => {
-        const { data, table, event } = payload as Payload;
-        if (!sheet) {
-          return;
-        }
-        if (table === "wounds") {
+        if (!sheet) return;
+        const { data, event, table } = payload as Payload;
+        if (table === "characters") {
           switch (event) {
-            case "INSERT":
-              const newresilience_current = Math.min(
-                sheet.character.resilience_current - data.severity,
-                effectiveResilience
-              );
+            case "UPDATE":
               setSheet({
                 ...sheet,
-                wounds: [...sheet.wounds, data],
                 character: {
                   ...sheet.character,
-                  resilience_current: newresilience_current,
+                  ...data,
                 },
               });
               break;
-            // UPDATE and DELETE both return the updated list of wounds
             default:
+              break;
+          }
+        }
+        if (table === "stats") {
+          switch (event) {
+            case "UPDATE":
               setSheet({
                 ...sheet,
-                wounds: data,
+                stats: {
+                  ...sheet.stats,
+                  ...data,
+                },
+              });
+              break;
+            default:
+              break;
+          }
+        }
+        if (table === "character_skills") {
+          switch (event) {
+            case "DELETE":
+              const updatedSkills = sheet.skills.filter(
+                (skill) => skill.id !== data.id
+              );
+              setSheet({
+                ...sheet,
+                skills: [...updatedSkills],
+              });
+              break;
+            case "INSERT":
+              setSheet({
+                ...sheet,
+                skills: [...sheet.skills, data],
               });
               break;
           }
         }
-        if (table === "stats" && event === "UPDATE") {
-          setSheet({
-            ...sheet,
-            stats: data,
-          });
-        }
-        if (table === "characters") {
+        if (table === "wounds") {
           switch (event) {
+            case "INSERT":
+              setSheet({
+                ...sheet,
+                wounds: [...sheet.wounds, data],
+              });
+              break;
+            case "DELETE":
+              const updatedWounds = sheet.wounds.filter(
+                (wounds) => wounds.id !== data.id
+              );
+              setSheet({
+                ...sheet,
+                wounds: [...updatedWounds],
+              });
+              break;
             case "UPDATE":
+              const healedWounds = sheet.wounds.map((wound) => {
+                if (wound.id === data.id) {
+                  return data;
+                }
+                return wound;
+              });
               console.log(data);
               setSheet({
                 ...sheet,
-                character: data,
+                wounds: [...healedWounds],
               });
               break;
             default:
@@ -342,6 +379,17 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       supabase.removeChannel(channel);
     };
   }, [supabase, sheet, setSheet]);
+
+  useEffect(() => {
+    // Send the updated character sheet to the gm when changes are made
+    const channel = supabase.channel("gm-sync");
+    const payload: Payload = {
+      event: "GM-SYNC",
+      table: "GM-SYNC",
+      data: sheet,
+    };
+    channel.send({ type: "broadcast", event: "shout", payload });
+  }, [supabase, sheet]);
 
   const getSheet = async (sheetUID: string) => {
     fetch(`/api/characters/${sheetUID}`)
@@ -476,72 +524,62 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleHealWound = (woundId: number) => {
-    if (!sheet || !maxResilience) {
-      return;
-    }
-
-    const wound = sheet.wounds.find((wound) => wound.id === woundId);
-
-    if (!wound) {
-      return;
-    }
-
-    const healed = getHealedWound(wound);
-    const body: RequestBody<typeof healed> = {
-      characterUID: sheet.character.character_uid,
-      body: healed,
-    };
-
-    if (healed === null) {
-      fetch(`/api/wounds/${woundId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      return;
-    } else {
-      fetch(`/api/wounds/${woundId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-    }
+    // if (!sheet || !maxResilience) {
+    //   return;
+    // }
+    // const wound = sheet.wounds.find((wound) => wound.id === woundId);
+    // if (!wound) {
+    //   return;
+    // }
+    // const healed = getHealedWound(wound);
+    // const body: RequestBody<typeof healed> = {
+    //   characterUID: sheet.character.character_uid,
+    //   body: healed,
+    // };
+    // if (healed === null) {
+    //   fetch(`/api/wounds/${woundId}`, {
+    //     method: "DELETE",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(body),
+    //   });
+    //   return;
+    // } else {
+    //   fetch(`/api/wounds/${woundId}`, {
+    //     method: "PATCH",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify(body),
+    //   });
+    // }
   };
 
   const handleApplyDamage = (damageAmount: number, damageType: string) => {
-    if (!sheet || !maxResilience || !damageThresholds) {
-      return;
-    }
-
-    const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
-
-    let threshold: DamageThresholds = "Trivial";
-    if (damageAmount > trivialMax) threshold = "Light";
-    if (damageAmount > lightMax) threshold = "Medium";
-    if (damageAmount > mediumMax) threshold = "Heavy";
-    if (damageAmount > heavyMax) threshold = "Deadly";
-
-    if (threshold === "Deadly") return;
-
-    const woundName = getWoundName(threshold, damageType);
-    const wound = createWound(woundName);
-
-    const body: RequestBody<InsWound> = {
-      body: wound,
-      characterUID: sheet.character.character_uid,
-    };
-
-    fetch("/api/wounds", {
-      method: "POST",
-      body: JSON.stringify(body),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    // if (!sheet || !maxResilience || !damageThresholds) {
+    //   return;
+    // }
+    // const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
+    // let threshold: DamageThresholds = "Trivial";
+    // if (damageAmount > trivialMax) threshold = "Light";
+    // if (damageAmount > lightMax) threshold = "Medium";
+    // if (damageAmount > mediumMax) threshold = "Heavy";
+    // if (damageAmount > heavyMax) threshold = "Deadly";
+    // if (threshold === "Deadly") return;
+    // const woundName = getWoundName(threshold, damageType);
+    // const wound = createWound(woundName);
+    // const body: RequestBody<InsWound> = {
+    //   body: wound,
+    //   characterUID: sheet.character.character_uid,
+    // };
+    // fetch("/api/wounds", {
+    //   method: "POST",
+    //   body: JSON.stringify(body),
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    // });
   };
 
   const values = {
