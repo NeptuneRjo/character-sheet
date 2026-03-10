@@ -2,6 +2,7 @@
 
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 import {
+  CharacterModifiers,
   DamageThresholds,
   InsWound,
   Payload,
@@ -19,6 +20,7 @@ import {
   spendAP,
 } from "../utils";
 import { supabase } from "../supabaseClient";
+import { useCharacterModifiers } from "../hooks/useCharacterModifiers";
 
 const initializationError = (func: string) => {
   throw new Error(`${func} was called before SheetContext was initialized`);
@@ -44,244 +46,17 @@ export const SheetContext = createContext<SheetContextType>({
     handleApplyDamage: (damageAmount: number, damageType: string) =>
       initializationError("handleApplyDamage"),
   },
-  modifiers: {
-    maxResilience: 10,
-    effectiveResilience: 10,
-    maxReserves: 0,
-    buildModifiers: {
-      hitclassBonus: 0,
-      movespeedBonus: 0,
-      thresholdBonus: 0,
-      woundPointBonus: 0,
-      carryMultiplier: 0,
-      grappleDefense: 0,
-      grappleOffense: 0,
-      force: 0,
-    },
-    penalties: {
-      movementPenalty: 0,
-      statPenalty: 0,
-    },
-    hitClass: 8,
-    effectivePhysicality: 0,
-    reactionPhysicalityBonus: 0,
-    maxWard: 0,
-    effectiveMoveSpeed: 0,
-    carryCapacityKg: 0,
-    baseDamageThreshold: 11,
-    damageThresholds: {
-      trivialMax: 2,
-      lightMax: 4,
-      mediumMax: 7,
-      heavyMax: 10,
-    },
-    currentEffect: {
-      label: "Trivial",
-      detail: "No negatives",
-    },
-  },
+  modifiers: {} as CharacterModifiers,
 });
 
 export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const maxResilience = useMemo(() => {
-    if (sheet) {
-      const base = 4 + 2 * sheet.stats.vit;
-      return Math.max(0, base);
-    }
-    return 0;
-  }, [sheet?.stats, sheet?.wounds]);
-
-  const effectiveResilience = useMemo(() => {
-    if (sheet) {
-      const severity = Array.from(sheet.wounds).reduce(
-        (total, wound) => total + wound.severity,
-        0
-      );
-
-      const base = 4 + 2 * sheet.stats.vit;
-      return Math.max(0, base - severity);
-    }
-    return 0;
-  }, [sheet?.stats, sheet?.wounds]);
-
-  const maxReserves = useMemo(() => {
-    if (maxResilience && sheet) {
-      return Math.max(
-        sheet.character.resilience_reserves,
-        Math.floor(maxResilience / 3)
-      );
-    }
-    return 0;
-  }, [maxResilience, sheet?.character?.resilience_reserves]);
-
-  const buildModifiers = useMemo(() => {
-    if (sheet) {
-      switch (sheet.character.physical_build) {
-        case "Lithe":
-          return {
-            hitclassBonus: 2,
-            movespeedBonus: 1,
-            thresholdBonus: 0,
-            woundPointBonus: 0,
-            carryMultiplier: 0.5,
-            grappleDefense: 2,
-            grappleOffense: 0,
-            force: 0,
-          };
-        case "Hulking":
-          return {
-            hitclassBonus: -2,
-            movespeedBonus: -1,
-            thresholdBonus: 2,
-            woundPointBonus: 4,
-            carryMultiplier: 1.5,
-            grappleDefense: 0.5,
-            grappleOffense: 2,
-            force: 2,
-          };
-        default:
-          return {
-            hitclassBonus: 0,
-            movespeedBonus: 0,
-            thresholdBonus: 0,
-            woundPointBonus: 0,
-            carryMultiplier: 1,
-            grappleDefense: 1,
-            grappleOffense: 1,
-            force: 1,
-          };
-      }
-    }
-    return {
-      hitclassBonus: 0,
-      movespeedBonus: 0,
-      thresholdBonus: 0,
-      woundPointBonus: 0,
-      carryMultiplier: 0,
-      grappleDefense: 0,
-      grappleOffense: 0,
-      force: 0,
-    };
-  }, [sheet?.character?.physical_build]);
-
-  const penalties = useMemo(() => {
-    if (sheet && maxResilience) {
-      const { resilience_current } = sheet.character;
-      let movementPenalty = 0;
-      let statPenalty = 0;
-
-      if (maxResilience > 0 && resilience_current < maxResilience / 2) {
-        movementPenalty = 1;
-      }
-      if (maxResilience > 0 && resilience_current < maxResilience / 4) {
-        statPenalty = 1;
-      }
-      if (maxResilience > 0 && resilience_current < maxResilience / 8) {
-        movementPenalty = 2;
-        statPenalty = 2;
-      }
-
-      return { movementPenalty, statPenalty };
-    }
-    return {
-      movementPenalty: 0,
-      statPenalty: 0,
-    };
-  }, [maxResilience, sheet?.character?.resilience_current]);
-
-  const effectivePhysicality = useMemo(() => {
-    if (sheet && penalties) {
-      return Math.max(0, sheet.stats.phy - penalties.statPenalty);
-    }
-    return 0;
-  }, [sheet?.stats, penalties]);
-
-  const reactionPhysicalityBonus = useMemo(() => {
-    if (sheet && effectivePhysicality) {
-      const { physical_build } = sheet.character;
-      const multiplier =
-        physical_build === "Lithe" ? 1 : physical_build === "Average" ? 0.5 : 0;
-
-      return Math.floor(effectivePhysicality * multiplier);
-    }
-    return 0;
-  }, [sheet?.character?.physical_build, effectivePhysicality]);
-
-  const maxWard = useMemo(() => {
-    if (sheet) {
-      return sheet.stats.wil * 4;
-    }
-    return 0;
-  }, [sheet?.stats]);
-
-  const effectiveMoveSpeed = useMemo(() => {
-    if (buildModifiers && penalties && sheet) {
-      const { movespeedBonus } = buildModifiers;
-      const { movementPenalty } = penalties;
-      const { character } = sheet;
-
-      return Math.max(
-        0,
-        character.baseMoveSpeed + movespeedBonus - movementPenalty
-      );
-    }
-    return 0;
-  }, [buildModifiers, penalties, sheet]);
-
-  const carryCapacityKg = useMemo(() => {
-    if (sheet && buildModifiers) {
-      const base = 20 + sheet.stats.phy * 10;
-      return Math.max(0, Math.round(base * buildModifiers.carryMultiplier));
-    }
-    return 0;
-  }, [sheet?.stats, buildModifiers]);
-
-  const hitClass = useMemo(() => {
-    if (buildModifiers) {
-      return 8 + buildModifiers.hitclassBonus;
-    }
-    return 8;
-  }, [buildModifiers]);
-
-  const baseDamageThreshold = useMemo(() => {
-    if (sheet) {
-      return 8 + 3 * sheet.stats.vit + sheet.stats.phy;
-    }
-    return 11;
-  }, [sheet?.stats]);
-
-  const damageThresholds = useMemo(() => {
-    if (sheet && baseDamageThreshold && buildModifiers) {
-      return {
-        trivialMax:
-          Math.floor(baseDamageThreshold * 0.25) +
-          buildModifiers.thresholdBonus,
-        lightMax:
-          Math.floor(baseDamageThreshold * 0.5) + buildModifiers.thresholdBonus,
-        mediumMax:
-          Math.floor(baseDamageThreshold * 0.9) + buildModifiers.thresholdBonus,
-        heavyMax:
-          Math.floor(baseDamageThreshold * 1.25) +
-          buildModifiers.thresholdBonus,
-      };
-    }
-
-    return {
-      trivialMax: 2,
-      lightMax: 4,
-      mediumMax: 7,
-      heavyMax: 10,
-    };
-  }, [baseDamageThreshold, buildModifiers]);
-
-  const currentEffect = useMemo(() => {
-    return { label: "", detail: "" };
-  }, []);
+  const { setCharacter, modifiers } = useCharacterModifiers(sheet);
 
   useEffect(() => {
+    // Save to local host first- debounce to db after x amount of time
     const channel = supabase.channel(
       `player:${sheet?.character.character_uid}`
     );
@@ -381,6 +156,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [supabase, sheet, setSheet]);
 
   useEffect(() => {
+    setCharacter(sheet);
     // Send the updated character sheet to the gm when changes are made
     const channel = supabase.channel("gm-sync");
     const payload: Payload = {
@@ -437,7 +213,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleRefillWard = () => {
-    if (!sheet || !maxWard) {
+    if (!sheet || !modifiers.maxWard) {
       return;
     }
 
@@ -445,7 +221,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       ...sheet,
       character: {
         ...sheet.character,
-        ward_current: Math.min(maxWard, 20),
+        ward_current: Math.min(modifiers.maxWard, 20),
       },
     });
   };
@@ -475,7 +251,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleResilienceIncrease = (value?: number) => {
-    if (!sheet || !effectiveResilience) {
+    if (!sheet || !modifiers.effectiveResilience) {
       return;
     }
     if (value) {
@@ -489,7 +265,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     } else {
       const increasedResilience = Math.min(
         sheet.character.resilience_current + 1,
-        effectiveResilience
+        modifiers.effectiveResilience
       );
       setSheet({
         ...sheet,
@@ -502,17 +278,17 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleReservesIncrease = () => {
-    if (!sheet || !maxResilience) {
+    if (!sheet || !modifiers.maxResilience) {
       return;
     }
 
-    if (sheet.character.resilience_reserves >= maxReserves) {
+    if (sheet.character.resilience_reserves >= modifiers.maxReserves) {
       return;
     }
 
     const increasedReserves = getIncreasedReserves(
       sheet.character.resilience_reserves,
-      maxResilience
+      modifiers.maxResilience
     );
     setSheet({
       ...sheet,
@@ -597,22 +373,23 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       handleHealWound,
       handleApplyDamage,
     },
-    modifiers: {
-      maxResilience,
-      effectiveResilience,
-      maxReserves,
-      buildModifiers,
-      penalties,
-      effectivePhysicality,
-      reactionPhysicalityBonus,
-      maxWard,
-      effectiveMoveSpeed,
-      carryCapacityKg,
-      hitClass,
-      baseDamageThreshold,
-      damageThresholds,
-      currentEffect,
-    },
+    // modifiers: {
+    //   maxResilience,
+    //   effectiveResilience,
+    //   maxReserves,
+    //   buildModifiers,
+    //   penalties,
+    //   effectivePhysicality,
+    //   reactionPhysicalityBonus,
+    //   maxWard,
+    //   effectiveMoveSpeed,
+    //   carryCapacityKg,
+    //   hitClass,
+    //   baseDamageThreshold,
+    //   damageThresholds,
+    //   currentEffect,
+    // },
+    modifiers,
   };
 
   return (

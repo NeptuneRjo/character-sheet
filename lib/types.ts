@@ -142,22 +142,6 @@ export type SheetContextType = {
   isLoading: boolean;
   setSheet: Dispatch<SetStateAction<Sheet | null>>;
   getSheet: (characterUID: string) => Promise<void>;
-  modifiers: {
-    penalties: CurrentPenalties | null;
-    maxResilience: number;
-    effectiveResilience: number;
-    maxReserves: number;
-    buildModifiers: BuildModifiers;
-    effectivePhysicality: number;
-    reactionPhysicalityBonus: number;
-    maxWard: number;
-    effectiveMoveSpeed: number;
-    carryCapacityKg: number;
-    hitClass: number;
-    baseDamageThreshold: number;
-    damageThresholds: DamageMaxes;
-    currentEffect: CurrentEffect;
-  };
   handlers: {
     handleSpendAp: (cost: number) => void;
     handleSpendWard: (cost: number) => void;
@@ -168,6 +152,7 @@ export type SheetContextType = {
     handleHealWound: (woundId: number) => void;
     handleApplyDamage: (damageAmount: number, damageType: string) => void;
   };
+  modifiers: CharacterModifiers;
 };
 
 export type GMPanelContextType = {
@@ -224,4 +209,39 @@ export type Payload = {
 export type RequestBody<t> = {
   characterUID: string;
   body: t;
+};
+
+export type CharacterContextType = {
+  penalties: CurrentPenalties | null;
+  maxResilience: number;
+  effectiveResilience: number;
+  maxReserves: number;
+  buildModifiers: BuildModifiers;
+  effectivePhysicality: number;
+  reactionPhysicalityBonus: number;
+  maxWard: number;
+  effectiveMoveSpeed: number;
+  carryCapacityKg: number;
+  hitClass: number;
+  baseDamageThreshold: number;
+  damageThresholds: DamageMaxes;
+  currentEffect: CurrentEffect;
+  setCharacter: Dispatch<SetStateAction<Sheet | undefined>>;
+};
+
+export type CharacterModifiers = {
+  penalties: CurrentPenalties | null;
+  maxResilience: number;
+  effectiveResilience: number;
+  maxReserves: number;
+  buildModifiers: BuildModifiers;
+  effectivePhysicality: number;
+  reactionPhysicalityBonus: number;
+  maxWard: number;
+  effectiveMoveSpeed: number;
+  carryCapacityKg: number;
+  hitClass: number;
+  baseDamageThreshold: number;
+  damageThresholds: DamageMaxes;
+  currentEffect: CurrentEffect;
 };
