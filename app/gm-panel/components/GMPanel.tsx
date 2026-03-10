@@ -3,8 +3,7 @@
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { useContext, useEffect, useState } from "react";
 import { Login, Skills, Wounds } from ".";
-import { supabase } from "@/lib/supabaseClient";
-import { PhysicalBuilds, StatLabels } from "@/lib/types";
+import { PhysicalBuilds, StatLabels, Stats, Wound } from "@/lib/types";
 
 const GMPanel = () => {
   const { characters, isLoading, getCharacters, setters, skills, getSkills } =
@@ -55,6 +54,11 @@ const GMPanel = () => {
     setStats,
   } = setters;
 
+  const maxResilience = (stats: Stats) => {
+    const base = 4 + 2 * stats.vit;
+    return Math.max(0, base);
+  };
+
   if (!isAuthorized) {
     return <Login setIsAuthorized={setIsAuthorized} />;
   }
@@ -74,7 +78,7 @@ const GMPanel = () => {
               {character.character.name}
             </h2>
             <a
-              href={`/${character.character.id}`}
+              href={`/character/${character.character.character_uid}`}
               className="text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387] hover:text-[#f0d9a8]"
             >
               View Sheet →
@@ -127,7 +131,7 @@ const GMPanel = () => {
               </label>
             </div>
             <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-[#8b6a3f]">
-              {/* Derived Max Resilience: {maxResilience} */}
+              Derived Max Resilience: {maxResilience(character.stats)}
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
@@ -189,7 +193,7 @@ const GMPanel = () => {
               })}
             </div>
             <Skills skills={skills} character={character} />
-            <Wounds wounds={character.wounds} />
+            <Wounds sheet={character} />
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"
