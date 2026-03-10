@@ -119,6 +119,18 @@ export const woundDefinitions = {
   },
 } as const;
 
+export const woundTypes = [
+  "Generic Trivial Wound",
+  "Generic Light Wound",
+  "Generic Medium Wound",
+  "Generic Heavy Wound",
+  "Bleeding Gash",
+] as const;
+
+// Lets us check if a value exists in the wound type list.
+export const WoundTypes = woundTypes as readonly string[];
+export type WoundLabels = (typeof woundTypes)[number];
+
 export type PostWoundBody = {
   threshold: string;
   damageType: string;
@@ -165,6 +177,7 @@ export type GMPanelContextType = {
   getModifiers: (character: Sheet) => {
     maxResilience: number;
     effectiveMoveSpeed: number;
+    damageThresholds: DamageMaxes;
   };
   setters: {
     setMoveSpeed: (characterUID: string, newBaseSpeed: number) => void;
@@ -174,10 +187,16 @@ export type GMPanelContextType = {
     setPhysicalBuild: (characterUID: string, value: PhysicalBuilds) => void;
     setStats: (characterUID: string, stat: StatLabels, value: number) => void;
   };
-  addSkill: () => void;
-  addWound: () => void;
+  addSkill: (
+    characterUID: string,
+    skill: Skill,
+    modifiers: InsCharacterSkill
+  ) => void;
+  addWound: (characterUID: string, wound: InsWound) => void;
   getCharacters: () => void;
   getSkills: () => void;
+  removeSkill: (characterUID: string, skill: CharacterSkill) => void;
+  healWound: (characterUID: string, wound: Wound, healed: Wound | null) => void;
 };
 
 const eventTypes = ["INSERT", "UPDATE", "DELETE"] as const;
@@ -198,8 +217,8 @@ const tableTypes = [
  */
 export type Payload = {
   data: any;
-  event: (typeof eventTypes)[number];
-  table: (typeof tableTypes)[number];
+  event: (typeof eventTypes)[number] | "GM-SYNC";
+  table: (typeof tableTypes)[number] | "GM-SYNC";
 };
 
 export type RequestBody<t> = {
