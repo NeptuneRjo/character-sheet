@@ -8,103 +8,31 @@ import {
   WoundLabels,
   woundTypes,
 } from "@/lib/types";
-import { useContext, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { createWound, getHealedWound, getWoundName } from "@/lib/utils";
 import { updateWound } from "@/lib/database/queries";
+import { useCharacterModifiers } from "@/lib/hooks/useCharacterModifiers";
 
 interface Props {
   sheet: Sheet;
 }
 
 const Wounds = ({ sheet }: Props) => {
-  const { wounds, stats, character } = sheet;
+  const { wounds, character } = sheet;
   const { addWound, healWound } = useContext(GMPanelContext);
 
   const [woundName, setWoundName] = useState<WoundLabels>(woundTypes[0]);
   const [damageAmount, setDamageAmount] = useState<number>(0);
   const [damageType, setDamageType] = useState("Physical");
 
-  const baseDamageThreshold = useMemo(() => {
-    if (stats) {
-      return 8 + 3 * stats.vit + stats.phy;
-    }
-    return 11;
-  }, [stats]);
+  const { setCharacter, modifiers } = useCharacterModifiers(sheet);
 
-  const buildModifiers = useMemo(() => {
-    if (sheet) {
-      switch (sheet.character.physical_build) {
-        case "Lithe":
-          return {
-            hitclassBonus: 2,
-            movespeedBonus: 1,
-            thresholdBonus: 0,
-            woundPointBonus: 0,
-            carryMultiplier: 0.5,
-            grappleDefense: 2,
-            grappleOffense: 0,
-            force: 0,
-          };
-        case "Hulking":
-          return {
-            hitclassBonus: -2,
-            movespeedBonus: -1,
-            thresholdBonus: 2,
-            woundPointBonus: 4,
-            carryMultiplier: 1.5,
-            grappleDefense: 0.5,
-            grappleOffense: 2,
-            force: 2,
-          };
-        default:
-          return {
-            hitclassBonus: 0,
-            movespeedBonus: 0,
-            thresholdBonus: 0,
-            woundPointBonus: 0,
-            carryMultiplier: 1,
-            grappleDefense: 1,
-            grappleOffense: 1,
-            force: 1,
-          };
-      }
-    }
-    return {
-      hitclassBonus: 0,
-      movespeedBonus: 0,
-      thresholdBonus: 0,
-      woundPointBonus: 0,
-      carryMultiplier: 0,
-      grappleDefense: 0,
-      grappleOffense: 0,
-      force: 0,
-    };
-  }, [character?.physical_build]);
+  useEffect(() => {
+    setCharacter(sheet);
+  }, [sheet]);
 
-  const damageThresholds = useMemo(() => {
-    if (character && baseDamageThreshold && buildModifiers) {
-      return {
-        trivialMax:
-          Math.floor(baseDamageThreshold * 0.25) +
-          buildModifiers.thresholdBonus,
-        lightMax:
-          Math.floor(baseDamageThreshold * 0.5) + buildModifiers.thresholdBonus,
-        mediumMax:
-          Math.floor(baseDamageThreshold * 0.9) + buildModifiers.thresholdBonus,
-        heavyMax:
-          Math.floor(baseDamageThreshold * 1.25) +
-          buildModifiers.thresholdBonus,
-      };
-    }
-
-    return {
-      trivialMax: 2,
-      lightMax: 4,
-      mediumMax: 7,
-      heavyMax: 10,
-    };
-  }, [baseDamageThreshold, buildModifiers]);
+  const { damageThresholds } = modifiers;
 
   const handleApplyDamage = () => {
     const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
