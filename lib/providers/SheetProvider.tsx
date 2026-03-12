@@ -1,16 +1,7 @@
 "use client";
 
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
-import {
-  CharacterModifiers,
-  DamageThresholds,
-  InsWound,
-  Payload,
-  RequestBody,
-  Sheet,
-  SheetContextType,
-  Wound,
-} from "../types";
+import { CharacterModifiers, Payload, Sheet, SheetContextType } from "../types";
 import {
   createWound,
   getHealedWound,
@@ -137,7 +128,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
                 }
                 return wound;
               });
-              console.log(data);
               setSheet({
                 ...sheet,
                 wounds: [...healedWounds],
@@ -156,6 +146,12 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [supabase, sheet, setSheet]);
 
   useEffect(() => {
+    if (sheet) {
+      localStorage.setItem(
+        `player:${sheet?.character.character_uid}`,
+        JSON.stringify(sheet)
+      );
+    }
     setCharacter(sheet);
     // Send the updated character sheet to the gm when changes are made
     const channel = supabase.channel("gm-sync");
@@ -168,6 +164,15 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   }, [supabase, sheet]);
 
   const getSheet = async (sheetUID: string) => {
+    const stored = localStorage.getItem(`player:${sheetUID}`);
+
+    if (stored) {
+      const character = await JSON.parse(stored);
+      setSheet(character);
+      setIsLoading(false);
+      return;
+    }
+
     fetch(`/api/characters/${sheetUID}`)
       .then((res) => res.json())
       .then((data) => {
@@ -299,64 +304,9 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const handleHealWound = (woundId: number) => {
-    // if (!sheet || !maxResilience) {
-    //   return;
-    // }
-    // const wound = sheet.wounds.find((wound) => wound.id === woundId);
-    // if (!wound) {
-    //   return;
-    // }
-    // const healed = getHealedWound(wound);
-    // const body: RequestBody<typeof healed> = {
-    //   characterUID: sheet.character.character_uid,
-    //   body: healed,
-    // };
-    // if (healed === null) {
-    //   fetch(`/api/wounds/${woundId}`, {
-    //     method: "DELETE",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(body),
-    //   });
-    //   return;
-    // } else {
-    //   fetch(`/api/wounds/${woundId}`, {
-    //     method: "PATCH",
-    //     headers: {
-    //       "Content-Type": "application/json",
-    //     },
-    //     body: JSON.stringify(body),
-    //   });
-    // }
-  };
+  const handleHealWound = (woundId: number) => {};
 
-  const handleApplyDamage = (damageAmount: number, damageType: string) => {
-    // if (!sheet || !maxResilience || !damageThresholds) {
-    //   return;
-    // }
-    // const { trivialMax, lightMax, mediumMax, heavyMax } = damageThresholds;
-    // let threshold: DamageThresholds = "Trivial";
-    // if (damageAmount > trivialMax) threshold = "Light";
-    // if (damageAmount > lightMax) threshold = "Medium";
-    // if (damageAmount > mediumMax) threshold = "Heavy";
-    // if (damageAmount > heavyMax) threshold = "Deadly";
-    // if (threshold === "Deadly") return;
-    // const woundName = getWoundName(threshold, damageType);
-    // const wound = createWound(woundName);
-    // const body: RequestBody<InsWound> = {
-    //   body: wound,
-    //   characterUID: sheet.character.character_uid,
-    // };
-    // fetch("/api/wounds", {
-    //   method: "POST",
-    //   body: JSON.stringify(body),
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //   },
-    // });
-  };
+  const handleApplyDamage = (damageAmount: number, damageType: string) => {};
 
   const values = {
     sheet,
@@ -373,22 +323,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       handleHealWound,
       handleApplyDamage,
     },
-    // modifiers: {
-    //   maxResilience,
-    //   effectiveResilience,
-    //   maxReserves,
-    //   buildModifiers,
-    //   penalties,
-    //   effectivePhysicality,
-    //   reactionPhysicalityBonus,
-    //   maxWard,
-    //   effectiveMoveSpeed,
-    //   carryCapacityKg,
-    //   hitClass,
-    //   baseDamageThreshold,
-    //   damageThresholds,
-    //   currentEffect,
-    // },
     modifiers,
   };
 

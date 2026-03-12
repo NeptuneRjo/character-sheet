@@ -65,9 +65,19 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
 
   const getCharacters = async () => {
     setIsLoading(true);
+
+    const stored = localStorage.getItem("gm-characters");
+    if (stored) {
+      const data = await JSON.parse(stored);
+      setCharacters(data);
+      setIsLoading(false);
+      return;
+    }
+
     fetch("/api/gm-panel")
       .then((res) => res.json())
       .then((data) => {
+        localStorage.setItem("gm-characters", JSON.stringify(data));
         setCharacters(data);
         setIsLoading(false);
       })
@@ -79,6 +89,7 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     fetch("/api/skills")
       .then((res) => res.json())
       .then((data) => {
+        localStorage.setItem("gm-skills", JSON.stringify(data));
         setSkills(data);
         setIsLoading(false);
       });
@@ -125,6 +136,10 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
             }
             return character;
           });
+          localStorage.setItem(
+            "gm-characters",
+            JSON.stringify(updatedCharacters)
+          );
           setCharacters(updatedCharacters);
         }
       })
