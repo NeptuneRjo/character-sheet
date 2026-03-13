@@ -44,24 +44,18 @@ export const characters = pgTable(
 //   ]
 // );
 
-export const characterSkills = pgTable(
-  "character_skills",
-  {
-    id: serial("id").primaryKey(),
-    character_id: integer("character_id")
-      .notNull()
-      .references(() => characters.id, { onDelete: "cascade" }),
-    flat_modifier: smallint("flat_modifier").notNull().default(2),
-    bonus_dice: text("bonus_dice").notNull().default("1d4"),
-    name: text().notNull(),
-    ability: text().notNull(),
-    utility: smallint().notNull().default(0),
-    skill_id: text("skill_id").notNull(),
-  },
-  (table) => [
-    sql`${table.ability} IN ('Physicality', 'Acuity', 'Sense', 'Presence', 'Vitality')`,
-  ]
-);
+export const characterSkills = pgTable("character_skills", {
+  id: serial("id").primaryKey(),
+  character_id: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
+  flat_modifier: smallint("flat_modifier").notNull().default(2),
+  bonus_dice: text("bonus_dice").notNull().default("1d4"),
+  name: text().notNull(),
+  ability: text().notNull(),
+  utility: smallint().notNull().default(0),
+  skill_id: text("skill_id").notNull(),
+});
 
 export const wounds = pgTable(
   "wounds",
