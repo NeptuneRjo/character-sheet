@@ -4,35 +4,50 @@ import * as schema from "./database/schema";
 // Use when typing any object that's directly from the database.
 export type Character = typeof schema.characters.$inferSelect;
 export type Wound = typeof schema.wounds.$inferSelect;
-export type Trait = typeof schema.traits.$inferSelect;
-export type Skill = typeof schema.skills.$inferSelect;
-export type Equipment = typeof schema.equipment.$inferSelect;
 export type Stats = typeof schema.stats.$inferSelect;
-export type CharacterSkill = Skill & typeof schema.characterSkills.$inferSelect;
-export type Action = typeof schema.actions.$inferSelect;
-export type Reaction = typeof schema.reactions.$inferSelect;
+
+export type CharacterTrait = typeof schema.characterTraits.$inferSelect;
+export type Trait = Omit<CharacterTrait, "id" | "character_id">;
+
+export type CharacterSkill = typeof schema.characterSkills.$inferSelect;
+export type Skill = Omit<
+  CharacterSkill,
+  "flat_modifier" | "bonus_dice" | "character_id" | "id"
+>;
+
+export type CharacterEquipment = typeof schema.characterEquipment.$inferSelect;
+export type Equipment = Omit<
+  CharacterEquipment,
+  "id" | "character_id" | "quantity"
+>;
+
+export type CharacterAction = typeof schema.characterActions.$inferSelect;
+export type Action = Omit<CharacterAction, "id" | "character_id">;
+
+export type CharacterReaction = typeof schema.characterReactions.$inferSelect;
+export type Reaction = Omit<CharacterReaction, "id" | "character_id">;
 
 export type Sheet = {
   character: Character;
-  traits: Trait[];
+  traits: CharacterTrait[];
   stats: Stats;
   wounds: Wound[];
-  equipment: Equipment[];
+  equipment: CharacterEquipment[];
   skills: CharacterSkill[];
-  actions: Action[];
-  reactions: Reaction[];
+  actions: CharacterAction[];
+  reactions: CharacterReaction[];
 };
 
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;
 export type InsWound = typeof schema.wounds.$inferInsert;
-export type InsTrait = typeof schema.traits.$inferInsert;
-export type InsSkill = typeof schema.skills.$inferInsert;
-export type InsEquipment = typeof schema.equipment.$inferInsert;
-export type InsStats = typeof schema.equipment.$inferInsert;
+// export type InsTrait = typeof schema.traits.$inferInsert;
+// export type InsSkill = typeof schema.skills.$inferInsert;
+// export type InsEquipment = typeof schema.equipment.$inferInsert;
+export type InsStats = typeof schema.stats.$inferInsert;
 export type InsCharacterSkill = typeof schema.characterSkills.$inferInsert;
-export type InsAction = typeof schema.actions.$inferInsert;
-export type InsReaction = typeof schema.reactions.$inferInsert;
+// export type InsAction = typeof schema.actions.$inferInsert;
+// export type InsReaction = typeof schema.reactions.$inferInsert;
 
 const physicalBuildTypes = ["Lithe", "Average", "Hulking"] as const;
 
@@ -253,3 +268,12 @@ export type CharacterModifiers = {
   damageThresholds: DamageMaxes;
   currentEffect: CurrentEffect;
 };
+
+const abilities = [
+  "Physicality",
+  "Acuity",
+  "Sense",
+  "Presence",
+  "Vitality",
+] as const;
+export type Abilities = (typeof abilities)[number];
