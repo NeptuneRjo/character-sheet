@@ -1,5 +1,5 @@
 {
-  "id": "b89b0a04-b02a-44be-8f68-6df045d0b98a",
+  "id": "84e7a9a6-6b32-4e45-8d33-4ba8ce81f0d4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -16,7 +16,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -86,7 +86,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -150,7 +150,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -220,7 +220,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -298,7 +298,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -349,9 +349,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "resilience_current": {
           "name": "resilience_current",
@@ -407,26 +408,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "character_uid": {
-          "name": "character_uid",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "characters_character_uid_unique": {
-          "name": "characters_character_uid_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "character_uid"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {
         "ck_phys_build": {
@@ -490,7 +477,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
@@ -549,7 +536,7 @@
         },
         "character_id": {
           "name": "character_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": false
         }
