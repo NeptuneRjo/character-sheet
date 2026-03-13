@@ -16,6 +16,10 @@ import {
   Wound,
   DamageMaxes,
   InsWound,
+  Reaction,
+  Action,
+  Equipment,
+  Trait,
 } from "../types";
 import { supabase } from "../supabaseClient";
 import { DamageThresholds } from "@/app/character/[characterUID]/components";
@@ -28,6 +32,10 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   characters: [],
   isLoading: true,
   skills: [],
+  traits: [],
+  equipment: [],
+  actions: [],
+  reactions: [],
   getModifiers: () => initializationError("getModifiers"),
   setters: {
     setMoveSpeed: () => initializationError("setMoveSpeed"),
@@ -41,6 +49,10 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   addWound: () => initializationError("addWound"),
   getCharacters: () => initializationError("getCharacters"),
   getSkills: () => initializationError("getSkills"),
+  getActions: () => initializationError("getActions"),
+  getEquipment: () => initializationError("getEquipment"),
+  getTraits: () => initializationError("getTraits"),
+  getReactions: () => initializationError("getReactions"),
   removeSkill: () => initializationError("removeSkill"),
   healWound: () => initializationError("healWound"),
 });
@@ -48,7 +60,12 @@ export const GMPanelContext = createContext<GMPanelContextType>({
 export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
   const [characters, setCharacters] = useState<Sheet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
   const [skills, setSkills] = useState<Skill[]>([]);
+  const [reactions, setReactions] = useState<Reaction[]>([]);
+  const [actions, setActions] = useState<Action[]>([]);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
+  const [traits, setTraits] = useState<Trait[]>([]);
 
   useEffect(() => {
     const channel = supabase.channel("gm-sync");
@@ -91,6 +108,50 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
       .then((data) => {
         localStorage.setItem("gm-skills", JSON.stringify(data));
         setSkills(data);
+        setIsLoading(false);
+      });
+  };
+
+  const getTraits = async () => {
+    setIsLoading(true);
+    fetch("/api/traits")
+      .then((res) => res.json())
+      .then((data) => {
+        localStorage.setItem("gm-traits", JSON.stringify(data));
+        setTraits(data);
+        setIsLoading(false);
+      });
+  };
+
+  const getReactions = async () => {
+    setIsLoading(true);
+    fetch("/api/reactions")
+      .then((res) => res.json())
+      .then((data) => {
+        localStorage.setItem("gm-reactions", JSON.stringify(data));
+        setReactions(data);
+        setIsLoading(false);
+      });
+  };
+
+  const getActions = async () => {
+    setIsLoading(true);
+    fetch("/api/actions")
+      .then((res) => res.json())
+      .then((data) => {
+        localStorage.setItem("gm-actions", JSON.stringify(data));
+        setActions(data);
+        setIsLoading(false);
+      });
+  };
+
+  const getEquipment = async () => {
+    setIsLoading(true);
+    fetch("/api/equipment")
+      .then((res) => res.json())
+      .then((data) => {
+        localStorage.setItem("gm-equipment", JSON.stringify(data));
+        setEquipment(data);
         setIsLoading(false);
       });
   };
@@ -330,6 +391,10 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     characters,
     isLoading,
     skills,
+    reactions,
+    traits,
+    equipment,
+    actions,
     getModifiers,
     setters: {
       setMoveSpeed,
@@ -345,6 +410,10 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     getSkills,
     removeSkill,
     healWound,
+    getTraits,
+    getActions,
+    getReactions,
+    getEquipment,
   };
 
   return (

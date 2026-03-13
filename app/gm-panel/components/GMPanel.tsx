@@ -2,12 +2,34 @@
 
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { useContext, useEffect, useState } from "react";
-import { Login, Skills, Wounds } from ".";
+import {
+  Actions,
+  Equipment,
+  Login,
+  Reactions,
+  Skills,
+  Traits,
+  Wounds,
+} from ".";
 import { PhysicalBuilds, StatLabels, Stats, Wound } from "@/lib/types";
 
 const GMPanel = () => {
-  const { characters, isLoading, getCharacters, setters, skills, getSkills } =
-    useContext(GMPanelContext);
+  const {
+    characters,
+    isLoading,
+    getCharacters,
+    setters,
+    skills,
+    getSkills,
+    getTraits,
+    getActions,
+    getEquipment,
+    getReactions,
+    traits,
+    actions,
+    reactions,
+    equipment,
+  } = useContext(GMPanelContext);
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(true);
 
@@ -41,6 +63,10 @@ const GMPanel = () => {
       if (isAuthorized) {
         await getCharacters();
         await getSkills();
+        await getTraits();
+        await getEquipment();
+        await getActions();
+        await getReactions();
       }
     })();
   }, [isAuthorized]);
@@ -193,6 +219,19 @@ const GMPanel = () => {
               })}
             </div>
             <Skills skills={skills} character={character} />
+            <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
+              <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+                Traits, Equipment, Actions, Reactions
+              </p>
+              <div className="mt-3 grid gap-3 grid-cols-2">
+                <Traits traits={traits} character={character} />
+                <Equipment equipment={equipment} character={character} />
+              </div>
+              <div className="mt-3 grid gap-3 grid-cols-2">
+                <Actions actions={actions} character={character} />
+                <Reactions reactions={reactions} character={character} />
+              </div>
+            </div>
             <Wounds sheet={character} />
             <div className="flex flex-wrap gap-3">
               <button

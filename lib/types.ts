@@ -159,6 +159,10 @@ export type GMPanelContextType = {
   characters: Sheet[];
   isLoading: boolean;
   skills: Skill[];
+  traits: Trait[];
+  equipment: Equipment[];
+  actions: Action[];
+  reactions: Reaction[];
   getModifiers: (character: Sheet) => {
     maxResilience: number;
     effectiveMoveSpeed: number;
@@ -178,8 +182,12 @@ export type GMPanelContextType = {
     modifiers: InsCharacterSkill
   ) => void;
   addWound: (characterUID: string, wound: InsWound) => void;
-  getCharacters: () => void;
-  getSkills: () => void;
+  getCharacters: () => Promise<void>;
+  getSkills: () => Promise<void>;
+  getTraits: () => Promise<void>;
+  getEquipment: () => Promise<void>;
+  getReactions: () => Promise<void>;
+  getActions: () => Promise<void>;
   removeSkill: (characterUID: string, skill: CharacterSkill) => void;
   healWound: (characterUID: string, wound: Wound, healed: Wound | null) => void;
 };
