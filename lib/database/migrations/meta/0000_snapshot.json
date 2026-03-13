@@ -1,11 +1,11 @@
 {
-  "id": "5b548df9-ccce-4548-8af4-868a7cb3e042",
+  "id": "b89b0a04-b02a-44be-8f68-6df045d0b98a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.characters": {
-      "name": "characters",
+    "public.character_actions": {
+      "name": "character_actions",
       "schema": "",
       "columns": {
         "id": {
@@ -14,75 +14,252 @@
           "primaryKey": true,
           "notNull": true
         },
-        "resilience_max": {
-          "name": "resilience_max",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "resilience_reserves": {
-          "name": "resilience_reserves",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "action_points": {
-          "name": "action_points",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "ward_current": {
-          "name": "ward_current",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "hitclass": {
-          "name": "hitclass",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "physical_build": {
-          "name": "physical_build",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "movespeed": {
-          "name": "movespeed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "ck_phys_build": {
-          "name": "ck_phys_build",
-          "value": "\"characters\".\"physical_build\" IN ('Lithe', 'Average', 'Hulking')"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.character_skills": {
-      "name": "character_skills",
-      "schema": "",
-      "columns": {
         "character_id": {
           "name": "character_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cost": {
+          "name": "cost",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "action_id": {
+          "name": "action_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "character_actions_character_id_characters_id_fk": {
+          "name": "character_actions_character_id_characters_id_fk",
+          "tableFrom": "character_actions",
+          "tableTo": "characters",
+          "columnsFrom": [
+            "character_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.character_equipment": {
+      "name": "character_equipment",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "character_id": {
+          "name": "character_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "equipment_id": {
+          "name": "equipment_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "character_equipment_character_id_characters_id_fk": {
+          "name": "character_equipment_character_id_characters_id_fk",
+          "tableFrom": "character_equipment",
+          "tableTo": "characters",
+          "columnsFrom": [
+            "character_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.character_reactions": {
+      "name": "character_reactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "character_id": {
+          "name": "character_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "note": {
+          "name": "note",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cost": {
+          "name": "cost",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "reaction_id": {
+          "name": "reaction_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "character_reactions_character_id_characters_id_fk": {
+          "name": "character_reactions_character_id_characters_id_fk",
+          "tableFrom": "character_reactions",
+          "tableTo": "characters",
+          "columnsFrom": [
+            "character_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.character_skills": {
+      "name": "character_skills",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "character_id": {
+          "name": "character_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "flat_modifier": {
+          "name": "flat_modifier",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 2
+        },
+        "bonus_dice": {
+          "name": "bonus_dice",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'1d4'"
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ability": {
+          "name": "ability",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "utility": {
+          "name": "utility",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
         "skill_id": {
           "name": "skill_id",
-          "type": "integer",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         }
@@ -99,20 +276,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "character_skills_skill_id_skills_id_fk": {
-          "name": "character_skills_skill_id_skills_id_fk",
-          "tableFrom": "character_skills",
-          "tableTo": "skills",
-          "columnsFrom": [
-            "skill_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -122,8 +286,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.equipment": {
-      "name": "equipment",
+    "public.character_traits": {
+      "name": "character_traits",
       "schema": "",
       "columns": {
         "id": {
@@ -132,30 +296,36 @@
           "primaryKey": true,
           "notNull": true
         },
+        "character_id": {
+          "name": "character_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "description": {
           "name": "description",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "character_id": {
-          "name": "character_id",
-          "type": "integer",
+        "trait_id": {
+          "name": "trait_id",
+          "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {
-        "equipment_character_id_characters_id_fk": {
-          "name": "equipment_character_id_characters_id_fk",
-          "tableFrom": "equipment",
+        "character_traits_character_id_characters_id_fk": {
+          "name": "character_traits_character_id_characters_id_fk",
+          "tableFrom": "character_traits",
           "tableTo": "characters",
           "columnsFrom": [
             "character_id"
@@ -163,7 +333,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -173,8 +343,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.skills": {
-      "name": "skills",
+    "public.characters": {
+      "name": "characters",
       "schema": "",
       "columns": {
         "id": {
@@ -183,31 +353,87 @@
           "primaryKey": true,
           "notNull": true
         },
+        "resilience_current": {
+          "name": "resilience_current",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "resilience_reserves": {
+          "name": "resilience_reserves",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "action_points": {
+          "name": "action_points",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 4
+        },
+        "ward_current": {
+          "name": "ward_current",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "physical_build": {
+          "name": "physical_build",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "baseMoveSpeed": {
+          "name": "baseMoveSpeed",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 5
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'john'"
         },
-        "ability": {
-          "name": "ability",
+        "isCaster": {
+          "name": "isCaster",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "character_uid": {
+          "name": "character_uid",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
-        },
-        "utility": {
-          "name": "utility",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
+          "notNull": true
         }
       },
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "characters_character_uid_unique": {
+          "name": "characters_character_uid_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "character_uid"
+          ]
+        }
+      },
       "policies": {},
-      "checkConstraints": {},
+      "checkConstraints": {
+        "ck_phys_build": {
+          "name": "ck_phys_build",
+          "value": "\"characters\".\"physical_build\" IN ('Lithe', 'Average', 'Hulking')"
+        }
+      },
       "isRLSEnabled": false
     },
     "public.stats": {
@@ -222,39 +448,45 @@
         },
         "phy": {
           "name": "phy",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "vit": {
           "name": "vit",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "sen": {
           "name": "sen",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "wil": {
           "name": "wil",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "acu": {
           "name": "acu",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "pre": {
           "name": "pre",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "character_id": {
           "name": "character_id",
@@ -275,58 +507,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.traits": {
-      "name": "traits",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "character_id": {
-          "name": "character_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "traits_character_id_characters_id_fk": {
-          "name": "traits_character_id_characters_id_fk",
-          "tableFrom": "traits",
-          "tableTo": "characters",
-          "columnsFrom": [
-            "character_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -350,19 +531,21 @@
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "tier": {
           "name": "tier",
           "type": "text",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "'Trivial'"
         },
         "severity": {
           "name": "severity",
-          "type": "integer",
+          "type": "smallint",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": 0
         },
         "character_id": {
           "name": "character_id",
@@ -383,7 +566,7 @@
           "columnsTo": [
             "id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
