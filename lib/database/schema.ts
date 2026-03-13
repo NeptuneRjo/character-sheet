@@ -7,12 +7,13 @@ import {
   check,
   smallint,
   boolean,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 export const characters = pgTable(
   "characters",
   {
-    id: serial("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     resilience_current: smallint("resilience_current").notNull().default(0),
     resilience_reserves: smallint("resilience_reserves").notNull().default(1),
     action_points: smallint("action_points").notNull().default(4),
@@ -21,7 +22,6 @@ export const characters = pgTable(
     baseMoveSpeed: smallint().notNull().default(5),
     name: text().notNull().default("john"),
     isCaster: boolean().notNull().default(false),
-    character_uid: text("character_uid").notNull().unique(),
   },
   (table) => [
     check(
@@ -46,7 +46,7 @@ export const characters = pgTable(
 
 export const characterSkills = pgTable("character_skills", {
   id: serial("id").primaryKey(),
-  character_id: integer("character_id")
+  character_id: uuid("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   flat_modifier: smallint("flat_modifier").notNull().default(2),
@@ -64,7 +64,7 @@ export const wounds = pgTable(
     name: text().notNull(),
     tier: text().notNull().default("Trivial"),
     severity: smallint().notNull().default(0),
-    character_id: integer("character_id").references(() => characters.id, {
+    character_id: uuid("character_id").references(() => characters.id, {
       onDelete: "cascade",
     }),
   },
@@ -85,7 +85,7 @@ export const wounds = pgTable(
 
 export const characterTraits = pgTable("character_traits", {
   id: serial("id").primaryKey(),
-  character_id: integer("character_id")
+  character_id: uuid("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
@@ -105,7 +105,7 @@ export const characterTraits = pgTable("character_traits", {
 
 export const characterEquipment = pgTable("character_equipment", {
   id: serial("id").primaryKey(),
-  character_id: integer("character_id")
+  character_id: uuid("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
@@ -122,7 +122,7 @@ export const stats = pgTable("stats", {
   wil: smallint().notNull().default(0),
   acu: smallint().notNull().default(0),
   pre: smallint().notNull().default(0),
-  character_id: integer("character_id").references(() => characters.id, {
+  character_id: uuid("character_id").references(() => characters.id, {
     onDelete: "cascade",
   }),
 });
@@ -140,7 +140,7 @@ export const stats = pgTable("stats", {
 
 export const characterActions = pgTable("character_actions", {
   id: serial("id").primaryKey(),
-  character_id: integer("character_id")
+  character_id: uuid("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
@@ -163,7 +163,7 @@ export const characterActions = pgTable("character_actions", {
 
 export const characterReactions = pgTable("character_reactions", {
   id: serial("id").primaryKey(),
-  character_id: integer("character_id")
+  character_id: uuid("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
