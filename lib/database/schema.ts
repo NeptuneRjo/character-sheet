@@ -31,13 +31,32 @@ export const characters = pgTable(
   ]
 );
 
-export const skills = pgTable(
-  "skills",
+// export const skills = pgTable(
+//   "skills",
+//   {
+//     id: serial("id").primaryKey(),
+//     name: text().notNull(),
+//     ability: text().notNull(),
+//     utility: smallint().notNull().default(0),
+//   },
+//   (table) => [
+//     sql`${table.ability} IN ('Physicality', 'Acuity', 'Sense', 'Presence', 'Vitality')`,
+//   ]
+// );
+
+export const characterSkills = pgTable(
+  "character_skills",
   {
     id: serial("id").primaryKey(),
+    character_id: integer("character_id")
+      .notNull()
+      .references(() => characters.id, { onDelete: "cascade" }),
+    flat_modifier: smallint("flat_modifier").notNull().default(2),
+    bonus_dice: text("bonus_dice").notNull().default("1d4"),
     name: text().notNull(),
     ability: text().notNull(),
     utility: smallint().notNull().default(0),
+    skill_id: text("skill_id").notNull(),
   },
   (table) => [
     sql`${table.ability} IN ('Physicality', 'Acuity', 'Sense', 'Presence', 'Vitality')`,
@@ -61,23 +80,44 @@ export const wounds = pgTable(
   ]
 );
 
-export const traits = pgTable("traits", {
+// export const traits = pgTable("traits", {
+//   id: serial("id").primaryKey(),
+//   name: text().notNull(),
+//   description: text().notNull(),
+//   character_id: integer("character_id").references(() => characters.id, {
+//     onDelete: "cascade",
+//   }),
+// });
+
+export const characterTraits = pgTable("character_traits", {
   id: serial("id").primaryKey(),
+  character_id: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
   description: text().notNull(),
-  character_id: integer("character_id").references(() => characters.id, {
-    onDelete: "cascade",
-  }),
+  trait_id: text("trait_id").notNull(),
 });
 
-export const equipment = pgTable("equipment", {
+// export const equipment = pgTable("equipment", {
+//   id: serial("id").primaryKey(),
+//   name: text().notNull(),
+//   description: text().notNull(),
+//   quantity: smallint().notNull().default(0),
+//   character_id: integer("character_id").references(() => characters.id, {
+//     onDelete: "cascade",
+//   }),
+// });
+
+export const characterEquipment = pgTable("character_equipment", {
   id: serial("id").primaryKey(),
+  character_id: integer("character_id")
+    .notNull()
+    .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
   description: text().notNull(),
-  quantity: smallint().notNull().default(0),
-  character_id: integer("character_id").references(() => characters.id, {
-    onDelete: "cascade",
-  }),
+  quantity: smallint().notNull().default(1),
+  equipment_id: text("equipment_id").notNull(),
 });
 
 export const stats = pgTable("stats", {
@@ -93,35 +133,48 @@ export const stats = pgTable("stats", {
   }),
 });
 
-export const characterSkills = pgTable("character_skills", {
-  character_id: integer("character_id")
-    .notNull()
-    .references(() => characters.id, { onDelete: "cascade" }),
-  skill_id: smallint("skill_id")
-    .notNull()
-    .references(() => skills.id, { onDelete: "cascade" }),
-  flat_modifier: smallint("flat_modifier").notNull().default(0),
-  bonus_dice: text("bonus_dice").notNull().default("1d4"),
-});
+// export const actions = pgTable("actions", {
+//   id: serial("id").primaryKey(),
+//   character_id: integer("character_id")
+//     .notNull()
+//     .references(() => characters.id, { onDelete: "cascade" }),
+//   name: text().notNull(),
+//   cost: smallint().notNull().default(1),
+//   note: text(),
+//   difficulty: smallint(),
+// });
 
-export const actions = pgTable("actions", {
+export const characterActions = pgTable("character_actions", {
   id: serial("id").primaryKey(),
   character_id: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
-  cost: smallint().notNull().default(1),
   note: text(),
+  cost: smallint().notNull().default(1),
   difficulty: smallint(),
+  action_id: text("action_id").notNull(),
 });
 
-export const reactions = pgTable("reactions", {
+// export const reactions = pgTable("reactions", {
+//   id: serial("id").primaryKey(),
+//   character_id: integer("character_id")
+//     .notNull()
+//     .references(() => characters.id, { onDelete: "cascade" }),
+//   name: text().notNull(),
+//   cost: smallint().notNull().default(1),
+//   note: text(),
+//   difficulty: smallint(),
+// });
+
+export const characterReactions = pgTable("character_reactions", {
   id: serial("id").primaryKey(),
   character_id: integer("character_id")
     .notNull()
     .references(() => characters.id, { onDelete: "cascade" }),
   name: text().notNull(),
-  cost: smallint().notNull().default(1),
   note: text(),
+  cost: smallint().notNull().default(1),
   difficulty: smallint(),
+  reaction_id: text("reaction_id").notNull(),
 });
