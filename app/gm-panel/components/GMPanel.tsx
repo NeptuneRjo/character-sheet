@@ -104,7 +104,7 @@ const GMPanel = () => {
               {character.character.name}
             </h2>
             <a
-              href={`/character/${character.character.character_uid}`}
+              href={`/character/${character.character.id}`}
               className="text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387] hover:text-[#f0d9a8]"
             >
               View Sheet →
@@ -120,7 +120,7 @@ const GMPanel = () => {
                   value={character.character.resilience_current}
                   onChange={(event) =>
                     setResilienceCurrent(
-                      character.character.character_uid,
+                      character.character.id,
                       Number(event.target.value)
                     )
                   }
@@ -134,7 +134,7 @@ const GMPanel = () => {
                   value={character.character.resilience_reserves}
                   onChange={(event) =>
                     setResilienceReserves(
-                      character.character.character_uid,
+                      character.character.id,
                       Number(event.target.value)
                     )
                   }
@@ -148,7 +148,7 @@ const GMPanel = () => {
                   value={character.character.action_points}
                   onChange={(event) =>
                     setActionPoints(
-                      character.character.character_uid,
+                      character.character.id,
                       Number(event.target.value)
                     )
                   }
@@ -167,7 +167,7 @@ const GMPanel = () => {
                   value={character.character.baseMoveSpeed}
                   onChange={(event) =>
                     setMoveSpeed(
-                      character.character.character_uid,
+                      character.character.id,
                       Number(event.target.value)
                     )
                   }
@@ -180,7 +180,7 @@ const GMPanel = () => {
                   value={character.character.physical_build}
                   onChange={(event) =>
                     setPhysicalBuild(
-                      character.character.character_uid,
+                      character.character.id,
                       event.target.value as PhysicalBuilds
                     )
                   }
@@ -206,7 +206,7 @@ const GMPanel = () => {
                         value={value}
                         onChange={(event) =>
                           setStats(
-                            character.character.character_uid,
+                            character.character.id,
                             stat as StatLabels,
                             Number(event.target.value)
                           )
@@ -218,18 +218,18 @@ const GMPanel = () => {
                 }
               })}
             </div>
-            <Skills skills={skills} character={character} />
+            <Skills character={character} />
             <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
               <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
                 Traits, Equipment, Actions, Reactions
               </p>
               <div className="mt-3 grid gap-3 grid-cols-2">
-                <Traits traits={traits} character={character} />
-                <Equipment equipment={equipment} character={character} />
+                <Traits character={character} />
+                <Equipment character={character} />
               </div>
               <div className="mt-3 grid gap-3 grid-cols-2">
-                <Actions actions={actions} character={character} />
-                <Reactions reactions={reactions} character={character} />
+                <Actions character={character} />
+                <Reactions character={character} />
               </div>
             </div>
             <Wounds sheet={character} />

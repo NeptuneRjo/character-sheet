@@ -48,19 +48,19 @@ const Wounds = ({ sheet }: Props) => {
     const woundName = getWoundName(threshold, damageType);
     const wound = createWound(woundName);
 
-    addWound(character.character_uid, wound);
+    addWound(character.id, wound);
   };
 
   const handleApplyWound = () => {
     const wound = createWound(woundName);
 
-    addWound(character.character_uid, wound);
+    addWound(character.id, wound);
   };
 
   const handleHealWound = (wound: Wound) => {
     const healed = getHealedWound(wound);
 
-    healWound(character.character_uid, wound, healed);
+    healWound(character.id, wound, healed);
   };
 
   return (

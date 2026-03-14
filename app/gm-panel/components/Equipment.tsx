@@ -1,13 +1,13 @@
 "use client";
 
-import { Equipment as EquipmentType, Sheet } from "@/lib/types";
+import { Sheet } from "@/lib/types";
+import { equipment } from "@/app/data";
 
 interface Props {
-  equipment: EquipmentType[];
   character: Sheet;
 }
 
-const Equipment = ({ equipment, character }: Props) => {
+const Equipment = ({ character }: Props) => {
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">

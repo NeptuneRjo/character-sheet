@@ -1,13 +1,13 @@
 "use client";
 
 import { Reaction, Sheet } from "@/lib/types";
+import { reactions } from "@/app/data";
 
 interface Props {
-  reactions: Reaction[];
   character: Sheet;
 }
 
-const Reactions = ({ reactions, character }: Props) => {
+const Reactions = ({ character }: Props) => {
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">

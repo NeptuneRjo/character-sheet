@@ -3,35 +3,42 @@
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { CharacterSkill, InsCharacterSkill, Sheet, Skill } from "@/lib/types";
 import { useContext, useState } from "react";
+import { skills } from "../../data";
 
 interface Props {
-  skills: Skill[];
   character: Sheet;
 }
 
-const Skills = ({ skills, character }: Props) => {
+const Skills = ({ character }: Props) => {
   const { addSkill, removeSkill } = useContext(GMPanelContext);
 
-  const [selectedSkillIndex, setSelectedSkillIndex] = useState<number>(0);
+  const [selectedSkill, setSelectedSkill] = useState<string>(
+    skills[0].skill_id
+  );
   const [flatModifier, setFlatModifier] = useState<number>(2);
   const [bonusDice, setBonusDice] = useState<string>("1d4");
 
   const handleAddSkill = () => {
-    const modifiers: InsCharacterSkill = {
+    const skill = skills.find((skill) => skill.skill_id === selectedSkill);
+
+    if (!skill) {
+      return;
+    }
+
+    const characterSkill: InsCharacterSkill = {
       character_id: character.character.id,
-      skill_id: skills[selectedSkillIndex].id,
+      skill_id: skill?.skill_id,
       flat_modifier: flatModifier,
       bonus_dice: bonusDice,
+      name: skill?.name,
+      ability: skill?.ability,
     };
-    addSkill(
-      character.character.character_uid,
-      skills[selectedSkillIndex],
-      modifiers
-    );
+
+    addSkill(character.character.id, characterSkill);
   };
 
   const handleRemoveSkill = (skill: CharacterSkill) => {
-    removeSkill(character.character.character_uid, skill);
+    removeSkill(character.character.id, skill);
   };
 
   return (
@@ -44,14 +51,12 @@ const Skills = ({ skills, character }: Props) => {
           <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Skill
             <select
-              value={selectedSkillIndex}
-              onChange={(event) =>
-                setSelectedSkillIndex(Number(event.target.value))
-              }
+              value={selectedSkill}
+              onChange={(event) => setSelectedSkill(event.target.value)}
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             >
-              {skills.map(({ name, ability }, key) => (
-                <option key={key} value={key}>
+              {skills.map(({ name, ability, skill_id }, key) => (
+                <option key={key} value={skill_id}>
                   {name} ({ability})
                 </option>
               ))}
