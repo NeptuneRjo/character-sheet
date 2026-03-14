@@ -1,7 +1,11 @@
+import { eq } from "drizzle-orm";
 import { db } from "..";
-import { equipment } from "../schema";
+import { characterEquipment } from "../schema";
 
-export const getEquipment = async () => {
-  const query = await db.select().from(equipment);
+export const getEquipment = async (characterId: string) => {
+  const query = await db
+    .select()
+    .from(characterEquipment)
+    .where(eq(characterEquipment.character_id, characterId));
   return query;
 };

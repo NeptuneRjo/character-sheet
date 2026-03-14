@@ -1,14 +1,13 @@
 import { Character, Sheet, Stats } from "@/lib/types";
 import { db } from "../index";
 import {
-  actions,
+  characterActions,
   characters,
   characterSkills,
-  equipment,
-  reactions,
-  skills,
+  characterEquipment,
+  characterReactions,
   stats,
-  traits,
+  characterTraits,
   wounds,
 } from "../schema";
 import { eq, getTableColumns, sql } from "drizzle-orm";
@@ -24,11 +23,11 @@ export const getCharacters = async (): Promise<Character[]> => {
 /**
  * Retrieves individual character.
  */
-export const getCharacter = async (character_uid: string): Promise<Sheet> => {
+export const getCharacter = async (characterId: string): Promise<Sheet> => {
   const traitsSubquery = db
     .select()
-    .from(traits)
-    .where(eq(traits.character_id, characters.id))
+    .from(characterTraits)
+    .where(eq(characterTraits.character_id, characters.id))
     .as("traits");
   const statsSubquery = db
     .select()
@@ -42,52 +41,27 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     .as("wounds");
   const equipmentSubquery = db
     .select()
-    .from(equipment)
-    .where(eq(equipment.character_id, characters.id))
+    .from(characterEquipment)
+    .where(eq(characterEquipment.character_id, characters.id))
     .as("equipment");
   const actionsSubquery = db
     .select()
-    .from(actions)
-    .where(eq(actions.character_id, characters.id))
+    .from(characterActions)
+    .where(eq(characterActions.character_id, characters.id))
     .as("actions");
   const reactionsSubquery = db
     .select()
-    .from(reactions)
-    .where(eq(reactions.character_id, characters.id))
+    .from(characterReactions)
+    .where(eq(characterReactions.character_id, characters.id))
     .as("reactions");
   const skillsSubquery = db
-    .select({
-      skills,
-      skill_id: characterSkills.skill_id,
-      character_id: characterSkills.character_id,
-      flat_modifier: characterSkills.flat_modifier,
-      bonus_dice: characterSkills.bonus_dice,
-    })
+    .select()
     .from(characterSkills)
-    .leftJoin(skills, eq(characterSkills.skill_id, skills.id))
     .where(eq(characterSkills.character_id, characters.id))
     .as("skills");
 
   const query = await db
-    .select({
-      characters,
-      traits,
-      stats,
-      wounds,
-      equipment,
-      actions,
-      reactions,
-      skills: {
-        id: skills.id,
-        name: skills.name,
-        ability: skills.ability,
-        utility: skills.utility,
-        skill_id: skillsSubquery.skill_id,
-        character_id: skillsSubquery.character_id,
-        flat_modifier: skillsSubquery.flat_modifier,
-        bonus_dice: skillsSubquery.bonus_dice,
-      },
-    })
+    .select()
     .from(characters)
     .leftJoinLateral(traitsSubquery, sql`true`)
     .leftJoinLateral(statsSubquery, sql`true`)
@@ -96,7 +70,7 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     .leftJoinLateral(actionsSubquery, sql`true`)
     .leftJoinLateral(reactionsSubquery, sql`true`)
     .leftJoinLateral(skillsSubquery, sql`true`)
-    .where(eq(characters.character_uid, character_uid));
+    .where(eq(characters.id, characterId));
 
   const result = query.reduce<Sheet>((acc, cv) => {
     // the objects for this iteration
@@ -113,7 +87,7 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
 
     // if the last iteration's object is not the same as this iteration's object, create a new object
     // doesn't work if there is no optional (?) chaining
-    if (acc?.character?.character_uid !== characters!.character_uid) {
+    if (acc?.character?.id !== characters!.id) {
       // const { id, ...rest } = characters!;
       acc = {
         character: {} as Character,
@@ -132,7 +106,9 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     }
 
     if (traits) {
-      const isDupe = acc.traits.some((trait) => trait.id === traits.id);
+      const isDupe = acc.traits.some(
+        (trait) => trait.trait_id === traits.trait_id
+      );
 
       if (!isDupe) {
         acc.traits.push(traits);
@@ -152,7 +128,9 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     }
 
     if (equipment) {
-      const isDupe = acc.equipment.some((item) => item.id === equipment.id);
+      const isDupe = acc.equipment.some(
+        (item) => item.equipment_id === equipment.equipment_id
+      );
 
       if (!isDupe) {
         acc.equipment.push(equipment);
@@ -160,7 +138,9 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     }
 
     if (actions) {
-      const isDupe = acc.actions.some((action) => action.id === actions.id);
+      const isDupe = acc.actions.some(
+        (action) => action.action_id === actions.action_id
+      );
 
       if (!isDupe) {
         acc.actions.push(actions);
@@ -169,7 +149,7 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
 
     if (reactions) {
       const isDupe = acc.reactions.some(
-        (reaction) => reaction.id === reactions.id
+        (reaction) => reaction.reaction_id === reactions.reaction_id
       );
 
       if (!isDupe) {
@@ -178,7 +158,9 @@ export const getCharacter = async (character_uid: string): Promise<Sheet> => {
     }
 
     if (skills && characterSkills) {
-      const isDupe = acc.skills.some((skill) => skill.id === skills.id);
+      const isDupe = acc.skills.some(
+        (skill) => skill.skill_id === skills.skill_id
+      );
 
       if (!isDupe) {
         acc.skills.push(skills);
@@ -205,7 +187,7 @@ export const updateCharacter = async (
   const updated = await db
     .update(characters)
     .set(update)
-    .where(eq(characters.character_uid, character_uid))
+    .where(eq(characters.id, character_uid))
     .returning();
 
   if (!updated[0]) {

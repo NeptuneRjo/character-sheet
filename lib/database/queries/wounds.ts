@@ -7,7 +7,7 @@ export const insertWound = async (charUID: string, wound: InsWound) => {
   const parent = await db
     .select()
     .from(characters)
-    .where(eq(characters.character_uid, charUID));
+    .where(eq(characters.id, charUID));
 
   if (!parent[0]) {
     throw new Error(`Unable to find a charater with the UID: ${charUID}`);
