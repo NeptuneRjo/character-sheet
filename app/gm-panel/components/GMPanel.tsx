@@ -14,22 +14,8 @@ import {
 import { PhysicalBuilds, StatLabels, Stats, Wound } from "@/lib/types";
 
 const GMPanel = () => {
-  const {
-    characters,
-    isLoading,
-    getCharacters,
-    setters,
-    skills,
-    getSkills,
-    getTraits,
-    getActions,
-    getEquipment,
-    getReactions,
-    traits,
-    actions,
-    reactions,
-    equipment,
-  } = useContext(GMPanelContext);
+  const { characters, isLoading, getCharacters, setters } =
+    useContext(GMPanelContext);
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(true);
 
@@ -62,11 +48,6 @@ const GMPanel = () => {
     (async () => {
       if (isAuthorized) {
         await getCharacters();
-        await getSkills();
-        await getTraits();
-        await getEquipment();
-        await getActions();
-        await getReactions();
       }
     })();
   }, [isAuthorized]);
@@ -88,13 +69,13 @@ const GMPanel = () => {
   if (!isAuthorized) {
     return <Login setIsAuthorized={setIsAuthorized} />;
   }
-  if (isLoading) {
+  if (isLoading || characters.length <= 0) {
     return <div>loading...</div>;
   }
 
   return (
     <div className="grid gap-6">
-      {characters.map((character, key) => (
+      {characters?.map((character, key) => (
         <section
           key={key}
           className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6"

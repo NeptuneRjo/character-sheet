@@ -26,12 +26,10 @@ const Skills = ({ character }: Props) => {
     }
 
     const characterSkill: InsCharacterSkill = {
+      ...skill,
       character_id: character.character.id,
-      skill_id: skill?.skill_id,
       flat_modifier: flatModifier,
       bonus_dice: bonusDice,
-      name: skill?.name,
-      ability: skill?.ability,
     };
 
     addSkill(character.character.id, characterSkill);
