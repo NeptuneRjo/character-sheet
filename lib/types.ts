@@ -41,13 +41,15 @@ export type Sheet = {
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;
 export type InsWound = typeof schema.wounds.$inferInsert;
-// export type InsTrait = typeof schema.traits.$inferInsert;
-// export type InsSkill = typeof schema.skills.$inferInsert;
-// export type InsEquipment = typeof schema.equipment.$inferInsert;
 export type InsStats = typeof schema.stats.$inferInsert;
+
+export type InsCharacterTrait = typeof schema.characterTraits.$inferInsert;
+export type InsCharacterEquipment =
+  typeof schema.characterEquipment.$inferInsert;
 export type InsCharacterSkill = typeof schema.characterSkills.$inferInsert;
-// export type InsAction = typeof schema.actions.$inferInsert;
-// export type InsReaction = typeof schema.reactions.$inferInsert;
+export type InsCharacterAction = typeof schema.characterActions.$inferInsert;
+export type InsCharacterReaction =
+  typeof schema.characterReactions.$inferInsert;
 
 const physicalBuildTypes = ["Lithe", "Average", "Hulking"] as const;
 
@@ -173,16 +175,6 @@ export type SheetContextType = {
 export type GMPanelContextType = {
   characters: Sheet[];
   isLoading: boolean;
-  skills: Skill[];
-  traits: Trait[];
-  equipment: Equipment[];
-  actions: Action[];
-  reactions: Reaction[];
-  getModifiers: (character: Sheet) => {
-    maxResilience: number;
-    effectiveMoveSpeed: number;
-    damageThresholds: DamageMaxes;
-  };
   setters: {
     setMoveSpeed: (characterUID: string, newBaseSpeed: number) => void;
     setActionPoints: (characterUID: string, value: number) => void;
@@ -191,18 +183,9 @@ export type GMPanelContextType = {
     setPhysicalBuild: (characterUID: string, value: PhysicalBuilds) => void;
     setStats: (characterUID: string, stat: StatLabels, value: number) => void;
   };
-  addSkill: (
-    characterUID: string,
-    skill: Skill,
-    modifiers: InsCharacterSkill
-  ) => void;
+  addSkill: (characterId: string, skill: InsCharacterSkill) => void;
   addWound: (characterUID: string, wound: InsWound) => void;
   getCharacters: () => Promise<void>;
-  getSkills: () => Promise<void>;
-  getTraits: () => Promise<void>;
-  getEquipment: () => Promise<void>;
-  getReactions: () => Promise<void>;
-  getActions: () => Promise<void>;
   removeSkill: (characterUID: string, skill: CharacterSkill) => void;
   healWound: (characterUID: string, wound: Wound, healed: Wound | null) => void;
 };
