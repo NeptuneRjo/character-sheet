@@ -40,19 +40,6 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
   const [characters, setCharacters] = useState<Sheet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  useEffect(() => {
-    const channel = supabase.channel("gm-sync");
-    channel
-      .on("broadcast", { event: "*" }, ({ payload }) => {
-        const { data, table, event } = payload as Payload;
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [supabase, characters, setCharacters]);
-
   const getCharacters = async () => {
     setIsLoading(true);
 
