@@ -2,27 +2,17 @@
 
 import { createContext, ReactNode, useEffect, useRef, useState } from "react";
 import {
-  Character,
   Sheet,
   GMPanelContextType,
-  Skill,
-  RequestBody,
   Payload,
   PhysicalBuilds,
-  Stats,
   StatLabels,
   CharacterSkill,
   InsCharacterSkill,
   Wound,
-  DamageMaxes,
   InsWound,
-  Reaction,
-  Action,
-  Equipment,
-  Trait,
 } from "../types";
 import { supabase } from "../supabaseClient";
-import { DamageThresholds } from "@/app/character/[characterUID]/components";
 
 const initializationError = (func: string) => {
   throw new Error(`${func} was called before PanelContext was initialized`);
@@ -31,12 +21,6 @@ const initializationError = (func: string) => {
 export const GMPanelContext = createContext<GMPanelContextType>({
   characters: [],
   isLoading: true,
-  skills: [],
-  traits: [],
-  equipment: [],
-  actions: [],
-  reactions: [],
-  getModifiers: () => initializationError("getModifiers"),
   setters: {
     setMoveSpeed: () => initializationError("setMoveSpeed"),
     setActionPoints: () => initializationError("setActionPoints"),
@@ -48,11 +32,6 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   addSkill: () => initializationError("addSkill"),
   addWound: () => initializationError("addWound"),
   getCharacters: () => initializationError("getCharacters"),
-  getSkills: () => initializationError("getSkills"),
-  getActions: () => initializationError("getActions"),
-  getEquipment: () => initializationError("getEquipment"),
-  getTraits: () => initializationError("getTraits"),
-  getReactions: () => initializationError("getReactions"),
   removeSkill: () => initializationError("removeSkill"),
   healWound: () => initializationError("healWound"),
 });
@@ -60,12 +39,6 @@ export const GMPanelContext = createContext<GMPanelContextType>({
 export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
   const [characters, setCharacters] = useState<Sheet[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  const [skills, setSkills] = useState<Skill[]>([]);
-  const [reactions, setReactions] = useState<Reaction[]>([]);
-  const [actions, setActions] = useState<Action[]>([]);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
-  const [traits, setTraits] = useState<Trait[]>([]);
 
   useEffect(() => {
     const channel = supabase.channel("gm-sync");
@@ -101,108 +74,23 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
       .catch((err) => console.log(err));
   };
 
-  const getSkills = async () => {
-    setIsLoading(true);
-    fetch("/api/skills")
-      .then((res) => res.json())
-      .then((data) => {
-        localStorage.setItem("gm-skills", JSON.stringify(data));
-        setSkills(data);
-        setIsLoading(false);
-      });
-  };
-
-  const getTraits = async () => {
-    setIsLoading(true);
-    fetch("/api/traits")
-      .then((res) => res.json())
-      .then((data) => {
-        localStorage.setItem("gm-traits", JSON.stringify(data));
-        setTraits(data);
-        setIsLoading(false);
-      });
-  };
-
-  const getReactions = async () => {
-    setIsLoading(true);
-    fetch("/api/reactions")
-      .then((res) => res.json())
-      .then((data) => {
-        localStorage.setItem("gm-reactions", JSON.stringify(data));
-        setReactions(data);
-        setIsLoading(false);
-      });
-  };
-
-  const getActions = async () => {
-    setIsLoading(true);
-    fetch("/api/actions")
-      .then((res) => res.json())
-      .then((data) => {
-        localStorage.setItem("gm-actions", JSON.stringify(data));
-        setActions(data);
-        setIsLoading(false);
-      });
-  };
-
-  const getEquipment = async () => {
-    setIsLoading(true);
-    fetch("/api/equipment")
-      .then((res) => res.json())
-      .then((data) => {
-        localStorage.setItem("gm-equipment", JSON.stringify(data));
-        setEquipment(data);
-        setIsLoading(false);
-      });
-  };
-
-  const getModifiers = (
-    character: Sheet
-  ): {
-    maxResilience: number;
-    effectiveMoveSpeed: number;
-    damageThresholds: DamageMaxes;
-  } => {
-    const { stats } = character;
-
-    const base = 4 + 2 * stats.vit;
-    const maxResilience = Math.max(0, base);
-
-    return {
-      maxResilience: 0,
-      effectiveMoveSpeed: 0,
-      damageThresholds: {
-        lightMax: 0,
-        trivialMax: 0,
-        heavyMax: 0,
-        mediumMax: 0,
-      },
-    };
-  };
-
   useEffect(() => {
     const channel = supabase.channel("gm-sync");
     channel
       .on("broadcast", { event: "*" }, ({ payload }) => {
-        const { data, table, event } = payload as Payload;
         if (characters.length <= 0) return;
-        if (table === "GM-SYNC" && event === "GM-SYNC") {
-          const updatedCharacters = characters.map((character) => {
-            if (
-              character?.character?.character_uid ===
-              data?.character?.character_uid
-            ) {
-              // data should just be the updated sheet, but we destructure the current sheet just in case.
-              return { ...character, ...data };
-            }
-            return character;
-          });
-          localStorage.setItem(
-            "gm-characters",
-            JSON.stringify(updatedCharacters)
-          );
-          setCharacters(updatedCharacters);
-        }
+        const updatedCharacters = characters.map((character) => {
+          // payload should just be the updated sheet
+          if (character?.character?.id === payload?.character?.id) {
+            return payload;
+          }
+          return character;
+        });
+        localStorage.setItem(
+          "gm-characters",
+          JSON.stringify(updatedCharacters)
+        );
+        setCharacters(updatedCharacters);
       })
       .subscribe();
 
@@ -211,191 +99,227 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [supabase, setCharacters, characters]);
 
-  /**
-   * Update the character section of the player's sheet
-   * @param characterUID
-   * @param update
-   */
-  const updateCharacter = (
-    characterUID: string,
-    update: Partial<Character>
-  ) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "UPDATE",
-      table: "characters",
-      data: update,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
+  const updatePlayer = (characterId: string, sheet: Sheet) => {
+    const updatedCharacters = characters.map((character) => {
+      if (character.character.id === characterId) {
+        return sheet;
+      }
+      return character;
+    });
+
+    setCharacters(updatedCharacters);
+    localStorage.setItem("gm-characters", JSON.stringify(updatedCharacters));
+
+    const channel = supabase.channel(`player:${characterId}`);
+    channel.send({ type: "broadcast", event: "shout", payload: sheet });
   };
 
-  /**
-   * Update the stats section of the player's sheet
-   * @param characterUID
-   * @param update
-   */
-  const updateStats = (characterUID: string, update: Partial<Stats>) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "UPDATE",
-      table: "stats",
-      data: update,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  /**
-   * Add a skill to the skills section of the player's sheet
-   * @param characterUID
-   * @param skill
-   */
-  const addSkills = (characterUID: string, skill: CharacterSkill) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "INSERT",
-      table: "character_skills",
-      data: skill,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  /**
-   * Remove a skill from the skills section of the player's sheet
-   * @param characterUID
-   * @param skill
-   */
-  const removeSkills = (characterUID: string, skill: CharacterSkill) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "DELETE",
-      table: "character_skills",
-      data: skill,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  /**
-   * Add a wound to the wounds section of the player's sheet
-   * @param characterUID
-   * @param wound
-   */
-  const addWounds = (characterUID: string, wound: Wound | InsWound) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "INSERT",
-      table: "wounds",
-      data: wound,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  /**
-   * Remove a wound from the wounds section of the player's sheet
-   * @param characterUID
-   * @param wound
-   */
-  const removeWounds = (characterUID: string, wound: Wound) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "DELETE",
-      table: "wounds",
-      data: wound,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  /**
-   * Update a wound in the wounds section of the player's sheet
-   * @param characterUID
-   * @param update
-   */
-  const updateWounds = (characterUID: string, update: Partial<Wound>) => {
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      event: "UPDATE",
-      table: "wounds",
-      data: update,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload: payload });
-  };
-
-  const setMoveSpeed = (characterUID: string, newBaseSpeed: number) => {
-    updateCharacter(characterUID, { baseMoveSpeed: newBaseSpeed });
-  };
-
-  const setActionPoints = (characterUID: string, value: number) => {
-    updateCharacter(characterUID, { action_points: value });
-  };
-
-  const setResilienceCurrent = (characterUID: string, value: number) => {
-    updateCharacter(characterUID, { resilience_current: value });
-  };
-
-  const setResilienceReserves = (characterUID: string, value: number) => {
-    updateCharacter(characterUID, { resilience_reserves: value });
-  };
-
-  const setPhysicalBuild = (characterUID: string, value: PhysicalBuilds) => {
-    updateCharacter(characterUID, { physical_build: value });
-  };
-
-  const setStats = (characterUID: string, stat: StatLabels, value: number) => {
-    updateStats(characterUID, { [stat]: value });
-  };
-
-  const addSkill = (
-    characterUID: string,
-    skill: Skill,
-    modifiers: InsCharacterSkill
-  ) => {
-    const character = characters.find(
-      ({ character }) => character.character_uid === characterUID
+  const setMoveSpeed = (characterId: string, newBaseSpeed: number) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
     );
 
-    if (!character) return;
-
-    const charSkill = {
-      ...skill,
-      ...{
-        skill_id: modifiers.skill_id ?? skill.id,
-        character_id: modifiers.character_id ?? character.character.id,
-        flat_modifier: modifiers.flat_modifier ?? 2,
-        bonus_dice: modifiers.bonus_dice ?? "1d4",
-      },
-    };
-
-    addSkills(characterUID, charSkill);
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        character: {
+          ...sheet.character,
+          baseMoveSpeed: newBaseSpeed,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
   };
 
-  const removeSkill = (characterUID: string, skill: CharacterSkill) => {
-    removeSkills(characterUID, skill);
+  const setActionPoints = (characterId: string, actionPoints: number) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        character: {
+          ...sheet.character,
+          action_points: actionPoints,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
   };
 
-  const addWound = (characterUID: string, wound: InsWound) => {
-    addWounds(characterUID, wound);
+  const setResilienceCurrent = (
+    characterId: string,
+    resilienceCurrent: number
+  ) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        character: {
+          ...sheet.character,
+          resilience_current: resilienceCurrent,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
   };
 
+  const setResilienceReserves = (
+    characterId: string,
+    resilienceReserves: number
+  ) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        character: {
+          ...sheet.character,
+          resilience_reserves: resilienceReserves,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const setPhysicalBuild = (characterId: string, build: PhysicalBuilds) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        character: {
+          ...sheet.character,
+          physical_build: build,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const setStats = (characterId: string, stat: StatLabels, value: number) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        stats: {
+          ...sheet.stats,
+          [stat]: value,
+        },
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const addSkill = (characterId: string, skill: InsCharacterSkill) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        skills: [...sheet.skills, skill as CharacterSkill],
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const removeSkill = (characterId: string, skill: CharacterSkill) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const skills = sheet.skills.filter(
+        ({ skill_id }) => skill_id !== skill.skill_id
+      );
+      const updated: Sheet = {
+        ...sheet,
+        skills: [...skills],
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const addWound = (characterId: string, wound: InsWound) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const updated: Sheet = {
+        ...sheet,
+        wounds: [...sheet.wounds, wound as Wound],
+      };
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const updateWound = (characterId: string, healed: Wound) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const wounds = sheet.wounds.map((wound) => {
+        if (wound.id === healed.id) {
+          return healed;
+        }
+        return wound;
+      });
+
+      const updated: Sheet = {
+        ...sheet,
+        wounds: [...wounds],
+      };
+
+      updatePlayer(characterId, updated);
+    }
+  };
+
+  const removeWound = (characterId: string, wound: Wound) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const wounds = sheet.wounds.filter(({ id }) => id !== wound.id);
+
+      const updated: Sheet = {
+        ...sheet,
+        wounds: [...wounds],
+      };
+
+      updatePlayer(characterId, updated);
+    }
+  };
   const healWound = (
-    characterUID: string,
+    characterId: string,
     wound: Wound,
     healed: Wound | null
   ) => {
     if (healed) {
-      updateWounds(characterUID, healed);
+      updateWound(characterId, healed);
     } else {
-      removeWounds(characterUID, wound);
+      removeWound(characterId, wound);
     }
   };
 
   const values = {
     characters,
     isLoading,
-    skills,
-    reactions,
-    traits,
-    equipment,
-    actions,
-    getModifiers,
     setters: {
       setMoveSpeed,
       setActionPoints,
@@ -407,13 +331,8 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     addSkill,
     addWound,
     getCharacters,
-    getSkills,
     removeSkill,
     healWound,
-    getTraits,
-    getActions,
-    getReactions,
-    getEquipment,
   };
 
   return (

@@ -48,95 +48,14 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Save to local host first- debounce to db after x amount of time
-    const channel = supabase.channel(
-      `player:${sheet?.character.character_uid}`
-    );
+    const channel = supabase.channel(`player:${sheet?.character.id}`);
     channel
       .on("broadcast", { event: "*" }, ({ payload }) => {
         if (!sheet) return;
-        const { data, event, table } = payload as Payload;
-        if (table === "characters") {
-          switch (event) {
-            case "UPDATE":
-              setSheet({
-                ...sheet,
-                character: {
-                  ...sheet.character,
-                  ...data,
-                },
-              });
-              break;
-            default:
-              break;
-          }
-        }
-        if (table === "stats") {
-          switch (event) {
-            case "UPDATE":
-              setSheet({
-                ...sheet,
-                stats: {
-                  ...sheet.stats,
-                  ...data,
-                },
-              });
-              break;
-            default:
-              break;
-          }
-        }
-        if (table === "character_skills") {
-          switch (event) {
-            case "DELETE":
-              const updatedSkills = sheet.skills.filter(
-                (skill) => skill.id !== data.id
-              );
-              setSheet({
-                ...sheet,
-                skills: [...updatedSkills],
-              });
-              break;
-            case "INSERT":
-              setSheet({
-                ...sheet,
-                skills: [...sheet.skills, data],
-              });
-              break;
-          }
-        }
-        if (table === "wounds") {
-          switch (event) {
-            case "INSERT":
-              setSheet({
-                ...sheet,
-                wounds: [...sheet.wounds, data],
-              });
-              break;
-            case "DELETE":
-              const updatedWounds = sheet.wounds.filter(
-                (wounds) => wounds.id !== data.id
-              );
-              setSheet({
-                ...sheet,
-                wounds: [...updatedWounds],
-              });
-              break;
-            case "UPDATE":
-              const healedWounds = sheet.wounds.map((wound) => {
-                if (wound.id === data.id) {
-                  return data;
-                }
-                return wound;
-              });
-              setSheet({
-                ...sheet,
-                wounds: [...healedWounds],
-              });
-              break;
-            default:
-              break;
-          }
-        }
+
+        console.log(payload);
+
+        setSheet(payload);
       })
       .subscribe();
 
@@ -148,23 +67,18 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (sheet) {
       localStorage.setItem(
-        `player:${sheet?.character.character_uid}`,
+        `player:${sheet?.character.id}`,
         JSON.stringify(sheet)
       );
     }
     setCharacter(sheet);
     // Send the updated character sheet to the gm when changes are made
     const channel = supabase.channel("gm-sync");
-    const payload: Payload = {
-      event: "GM-SYNC",
-      table: "GM-SYNC",
-      data: sheet,
-    };
-    channel.send({ type: "broadcast", event: "shout", payload });
+    channel.send({ type: "broadcast", event: "shout", sheet });
   }, [supabase, sheet]);
 
-  const getSheet = async (sheetUID: string) => {
-    const stored = localStorage.getItem(`player:${sheetUID}`);
+  const getSheet = async (characterId: string) => {
+    const stored = localStorage.getItem(`player:${characterId}`);
 
     if (stored) {
       const character = await JSON.parse(stored);
@@ -173,7 +87,7 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    fetch(`/api/characters/${sheetUID}`)
+    fetch(`/api/characters/${characterId}`)
       .then((res) => res.json())
       .then((data) => {
         setSheet(data);
