@@ -115,7 +115,8 @@ const Panel = ({ character }: Props) => {
           </label>
         </div>
         <div className="flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-[#8b6a3f]">
-          Derived Max Resilience: {maxResilience}
+          Derived Max Resilience: {maxResilience} | Effective Resilience:
+          {effectiveResilience}
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
