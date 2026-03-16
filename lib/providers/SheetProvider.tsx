@@ -53,8 +53,6 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       .on("broadcast", { event: "*" }, ({ payload }) => {
         if (!sheet) return;
 
-        console.log(payload);
-
         setSheet(payload);
       })
       .subscribe();
@@ -70,11 +68,12 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
         `player:${sheet?.character.id}`,
         JSON.stringify(sheet)
       );
+
+      setCharacter(sheet);
+      // Send the updated character sheet to the gm when changes are made
+      const channel = supabase.channel("gm-sync");
+      channel.send({ type: "broadcast", event: "shout", payload: sheet });
     }
-    setCharacter(sheet);
-    // Send the updated character sheet to the gm when changes are made
-    const channel = supabase.channel("gm-sync");
-    channel.send({ type: "broadcast", event: "shout", sheet });
   }, [supabase, sheet]);
 
   const getSheet = async (characterId: string) => {
