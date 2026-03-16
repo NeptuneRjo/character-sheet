@@ -40,7 +40,7 @@ const Stats = () => {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {Object.entries(stats).map(([stat, value], key) => {
-        if (shouldDisplayStat(stat) && value !== null) {
+        if (shouldDisplayStat(stat) && typeof value === "number") {
           return (
             <div
               key={key}

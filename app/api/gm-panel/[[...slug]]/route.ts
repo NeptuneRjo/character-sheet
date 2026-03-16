@@ -10,7 +10,7 @@ export async function GET(
   try {
     const characters = await getCharacters();
     const panels = characters.map(async (character) => {
-      const panel = await getCharacter(character.character_uid);
+      const panel = await getCharacter(character.id);
       return panel;
     });
 
