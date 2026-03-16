@@ -6,3 +6,4 @@ export { default as Actions } from "./Actions";
 export { default as Equipment } from "./Equipment";
 export { default as Reactions } from "./Reactions";
 export { default as Traits } from "./Traits";
+export { default as Panel } from "./Panel";
