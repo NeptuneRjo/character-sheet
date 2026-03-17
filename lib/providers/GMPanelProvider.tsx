@@ -216,11 +216,25 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     );
 
     if (sheet) {
-      const updated: Sheet = {
-        ...sheet,
-        skills: [...sheet.skills, skill as CharacterSkill],
+      const body: RequestBody<InsCharacterSkill> = {
+        characterId,
+        body: skill,
       };
-      updatePlayer(characterId, updated);
+      fetch("/api/skills", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            skills: [...sheet.skills, data],
+          };
+          updatePlayer(characterId, updated);
+        });
     }
   };
 
@@ -230,14 +244,25 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     );
 
     if (sheet) {
-      const skills = sheet.skills.filter(
-        ({ skill_id }) => skill_id !== skill.skill_id
-      );
-      const updated: Sheet = {
-        ...sheet,
-        skills: [...skills],
+      const body: RequestBody<CharacterSkill> = {
+        characterId,
+        body: skill,
       };
-      updatePlayer(characterId, updated);
+      fetch("/api/skills", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            skills: [...data],
+          };
+          updatePlayer(characterId, updated);
+        });
     }
   };
 
