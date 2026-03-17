@@ -106,9 +106,7 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
     }
 
     if (traits) {
-      const isDupe = acc.traits.some(
-        (trait) => trait.trait_id === traits.trait_id
-      );
+      const isDupe = acc.traits.some((trait) => trait.id === traits.id);
 
       if (!isDupe) {
         acc.traits.push(traits);
@@ -128,9 +126,7 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
     }
 
     if (equipment) {
-      const isDupe = acc.equipment.some(
-        (item) => item.equipment_id === equipment.equipment_id
-      );
+      const isDupe = acc.equipment.some((item) => item.id === equipment.id);
 
       if (!isDupe) {
         acc.equipment.push(equipment);
@@ -138,9 +134,7 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
     }
 
     if (actions) {
-      const isDupe = acc.actions.some(
-        (action) => action.action_id === actions.action_id
-      );
+      const isDupe = acc.actions.some((action) => action.id === actions.id);
 
       if (!isDupe) {
         acc.actions.push(actions);
@@ -149,7 +143,7 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
 
     if (reactions) {
       const isDupe = acc.reactions.some(
-        (reaction) => reaction.reaction_id === reactions.reaction_id
+        (reaction) => reaction.id === reactions.id
       );
 
       if (!isDupe) {
@@ -158,9 +152,7 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
     }
 
     if (skills && characterSkills) {
-      const isDupe = acc.skills.some(
-        (skill) => skill.skill_id === skills.skill_id
-      );
+      const isDupe = acc.skills.some((skill) => skill.id === skills.id);
 
       if (!isDupe) {
         acc.skills.push(skills);
