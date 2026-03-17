@@ -166,7 +166,7 @@ export type SheetContextType = {
     handleResilienceDecrease: () => void;
     handleResilienceIncrease: (value?: number) => void;
     handleReservesIncrease: (value?: number) => void;
-    handleHealWound: (woundId: number) => void;
+    handleHealWound: (wound: Wound) => void;
     handleApplyDamage: (damageAmount: number, damageType: string) => void;
   };
   modifiers: CharacterModifiers;
@@ -213,7 +213,7 @@ export type Payload = {
 };
 
 export type RequestBody<t> = {
-  characterUID: string;
+  characterId: string;
   body: t;
 };
 
