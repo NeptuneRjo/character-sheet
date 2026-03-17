@@ -181,7 +181,7 @@ const Panel = ({ character }: Props) => {
           </p>
           <div className="mt-3 grid gap-3 grid-cols-2">
             <Traits sheet={character} />
-            <Equipment character={character} />
+            <Equipment sheet={character} />
           </div>
           <div className="mt-3 grid gap-3 grid-cols-2">
             <Actions character={character} />

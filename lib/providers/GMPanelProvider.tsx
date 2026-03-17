@@ -13,6 +13,8 @@ import {
   RequestBody,
   InsCharacterTrait,
   CharacterTrait,
+  InsCharacterEquipment,
+  CharacterEquipment,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -396,9 +398,69 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addEquipment = () => {};
+  const addEquipment = (
+    characterId: string,
+    equipment: InsCharacterEquipment
+  ) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
 
-  const removeEquipment = () => {};
+    if (sheet) {
+      const body: RequestBody<InsCharacterEquipment> = {
+        body: equipment,
+        characterId,
+      };
+      fetch("/api/equipment", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            equipment: [...sheet.equipment, data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const removeEquipment = (
+    characterId: string,
+    equipment: CharacterEquipment
+  ) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<CharacterEquipment> = {
+        body: equipment,
+        characterId,
+      };
+      fetch("/api/equipment", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            equipment: [...data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
 
   const updateEquipment = () => {};
 

@@ -18,8 +18,11 @@ const Equipment = () => {
         <p className="mt-2 text-sm text-[#b7a387]">None listed.</p>
       ) : (
         <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
-          {equipment.map((equipment) => (
-            <li className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
+          {equipment.map((equipment, key) => (
+            <li
+              className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2"
+              key={key}
+            >
               {equipment.name}: {equipment.description}
             </li>
           ))}
