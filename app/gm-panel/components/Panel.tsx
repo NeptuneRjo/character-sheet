@@ -180,7 +180,7 @@ const Panel = ({ character }: Props) => {
             Traits, Equipment, Actions, Reactions
           </p>
           <div className="mt-3 grid gap-3 grid-cols-2">
-            <Traits character={character} />
+            <Traits sheet={character} />
             <Equipment character={character} />
           </div>
           <div className="mt-3 grid gap-3 grid-cols-2">

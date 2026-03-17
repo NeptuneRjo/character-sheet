@@ -4,7 +4,6 @@ import { createContext, ReactNode, useEffect, useRef, useState } from "react";
 import {
   Sheet,
   GMPanelContextType,
-  Payload,
   PhysicalBuilds,
   StatLabels,
   CharacterSkill,
@@ -12,6 +11,8 @@ import {
   Wound,
   InsWound,
   RequestBody,
+  InsCharacterTrait,
+  CharacterTrait,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -35,6 +36,15 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   getCharacters: () => initializationError("getCharacters"),
   removeSkill: () => initializationError("removeSkill"),
   healWound: () => initializationError("healWound"),
+  addTrait: () => initializationError("addTrait"),
+  removeTrait: () => initializationError("removeTrait"),
+  addEquipment: () => initializationError("addEquipment"),
+  removeEquipment: () => initializationError("removeEquipment"),
+  updateEquipment: () => initializationError("updateEquipment"),
+  addAction: () => initializationError("addAction"),
+  removeAction: () => initializationError("removeAction"),
+  addReaction: () => initializationError("addReaction"),
+  removeReaction: () => initializationError("removeReaction"),
 });
 
 export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
@@ -328,6 +338,78 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const addTrait = (characterId: string, trait: InsCharacterTrait) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<InsCharacterTrait> = {
+        body: trait,
+        characterId,
+      };
+      fetch("/api/traits", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            traits: [...sheet.traits, data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const removeTrait = (characterId: string, trait: CharacterTrait) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<CharacterTrait> = {
+        body: trait,
+        characterId,
+      };
+      fetch("/api/traits", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            traits: [...data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const addEquipment = () => {};
+
+  const removeEquipment = () => {};
+
+  const updateEquipment = () => {};
+
+  const addAction = () => {};
+
+  const removeAction = () => {};
+
+  const addReaction = () => {};
+
+  const removeReaction = () => {};
+
   const values = {
     characters,
     isLoading,
@@ -344,6 +426,15 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     getCharacters,
     removeSkill,
     healWound,
+    addTrait,
+    removeTrait,
+    addEquipment,
+    removeEquipment,
+    updateEquipment,
+    addAction,
+    removeAction,
+    addReaction,
+    removeReaction,
   };
 
   return (
