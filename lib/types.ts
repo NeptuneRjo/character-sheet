@@ -184,32 +184,19 @@ export type GMPanelContextType = {
     setStats: (characterUID: string, stat: StatLabels, value: number) => void;
   };
   addSkill: (characterId: string, skill: InsCharacterSkill) => void;
-  addWound: (characterUID: string, wound: InsWound) => void;
+  addWound: (characterId: string, wound: InsWound) => void;
   getCharacters: () => Promise<void>;
-  removeSkill: (characterUID: string, skill: CharacterSkill) => void;
-  healWound: (characterUID: string, wound: Wound, healed: Wound | null) => void;
-};
-
-const eventTypes = ["INSERT", "UPDATE", "DELETE"] as const;
-const tableTypes = [
-  "characters",
-  "wounds",
-  "traits",
-  "stats",
-  "character_skills",
-  "actions",
-  "equipment",
-  "reactions",
-  "skills",
-] as const;
-
-/**
- * Defines the structure of the payload being sent via websockets
- */
-export type Payload = {
-  data: any;
-  event: (typeof eventTypes)[number] | "GM-SYNC";
-  table: (typeof tableTypes)[number] | "GM-SYNC";
+  removeSkill: (characterId: string, skill: CharacterSkill) => void;
+  healWound: (characterId: string, wound: Wound, healed: Wound | null) => void;
+  addTrait: (characterId: string, trait: InsCharacterTrait) => void;
+  removeTrait: (characterId: string, trait: CharacterTrait) => void;
+  addEquipment: (characterId: string, equipment: InsCharacterEquipment) => void;
+  removeEquipment: (characterId: string, equipment: CharacterEquipment) => void;
+  updateEquipment: (characterId: string, equipment: CharacterEquipment) => void;
+  addAction: (characterId: string, action: InsCharacterAction) => void;
+  removeAction: (characterId: string, action: CharacterAction) => void;
+  addReaction: (characterId: string, reaction: InsCharacterReaction) => void;
+  removeReaction: (characterId: string, reaction: CharacterReaction) => void;
 };
 
 export type RequestBody<t> = {
