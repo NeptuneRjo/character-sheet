@@ -3,34 +3,13 @@ import {
   insertWound,
   updateWound,
 } from "@/lib/database/queries/wounds";
-import { supabase } from "@/lib/supabaseClient";
-import {
-  InsWound,
-  Payload,
-  PostWoundBody,
-  RequestBody,
-  Wound,
-} from "@/lib/types";
-import { createWound, getWoundName } from "@/lib/utils";
+import { InsWound, RequestBody, Wound } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const { body, characterUID }: RequestBody<InsWound> = await req.json();
+  const { body, characterId }: RequestBody<InsWound> = await req.json();
   try {
-    const wound = await insertWound(characterUID, body);
-
-    const channel = supabase.channel(`player:${characterUID}`);
-    const payload: Payload = {
-      data: wound,
-      event: "INSERT",
-      table: "wounds",
-    };
-
-    channel.send({
-      type: "broadcast",
-      event: "shout",
-      payload: payload,
-    });
+    const wound = await insertWound(characterId, body);
 
     return NextResponse.json(wound, { status: 200 });
   } catch (error) {
@@ -49,40 +28,21 @@ export async function DELETE(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  const { characterUID }: RequestBody<null> = await req.json();
+  const { characterId, body }: RequestBody<Wound> = await req.json();
 
-  if (slug) {
-    try {
-      const wounds = await deleteWound(Number(slug[0]));
+  try {
+    const wounds = await deleteWound(body.id);
 
-      const channel = supabase.channel(`player:${characterUID}`);
-      const payload: Payload = {
-        data: wounds,
-        event: "DELETE",
-        table: "wounds",
-      };
-
-      channel.send({
-        type: "broadcast",
-        event: "shout",
-        payload: payload,
-      });
-
-      return NextResponse.json(wounds, { status: 200 });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          message: "Something went wrong while deleting a wound",
-          error: error,
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(wounds, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Something went wrong while deleting a wound",
+        error: error,
+      },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(
-    { message: "Invalid request. Provide a wound ID in the route." },
-    { status: 400 }
-  );
 }
 
 export async function PATCH(
@@ -90,38 +50,19 @@ export async function PATCH(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  const { body, characterUID }: RequestBody<Wound> = await req.json();
+  const { body, characterId }: RequestBody<Wound> = await req.json();
 
-  if (slug) {
-    try {
-      const wounds = await updateWound(Number(slug[0]), body);
+  try {
+    const wounds = await updateWound(body);
 
-      const channel = supabase.channel(`player:${characterUID}`);
-      const payload: Payload = {
-        data: wounds,
-        event: "UPDATE",
-        table: "wounds",
-      };
-
-      channel.send({
-        type: "broadcast",
-        event: "shout",
-        payload: payload,
-      });
-
-      return NextResponse.json(wounds, { status: 200 });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          message: "Something went wrong while updating a wound",
-          error: error,
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(wounds, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Something went wrong while updating a wound",
+        error: error,
+      },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(
-    { message: "Invalid request. Provide a wound ID in the route." },
-    { status: 400 }
-  );
 }

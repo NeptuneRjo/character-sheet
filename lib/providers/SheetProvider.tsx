@@ -1,12 +1,19 @@
 "use client";
 
 import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
-import { CharacterModifiers, Payload, Sheet, SheetContextType } from "../types";
+import {
+  CharacterModifiers,
+  DamageThresholds,
+  InsWound,
+  RequestBody,
+  Sheet,
+  SheetContextType,
+  Wound,
+} from "../types";
 import {
   createWound,
   getHealedWound,
   getIncreasedReserves,
-  getIncreasedResilience,
   getWoundName,
   spendAP,
 } from "../utils";
@@ -32,8 +39,7 @@ export const SheetContext = createContext<SheetContextType>({
       initializationError("handleResilienceIncrease"),
     handleReservesIncrease: (value?: number) =>
       initializationError("handleReservesIncrease"),
-    handleHealWound: (woundId: number) =>
-      initializationError("handleHealWound"),
+    handleHealWound: (wound: Wound) => initializationError("handleHealWound"),
     handleApplyDamage: (damageAmount: number, damageType: string) =>
       initializationError("handleApplyDamage"),
   },
@@ -217,9 +223,74 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const handleHealWound = (woundId: number) => {};
+  const handleHealWound = (wound: Wound) => {
+    if (!sheet) {
+      return;
+    }
+    const healed = getHealedWound(wound);
 
-  const handleApplyDamage = (damageAmount: number, damageType: string) => {};
+    const body: RequestBody<Wound> = {
+      body: healed ?? wound,
+      characterId: sheet?.character.id,
+    };
+    fetch("/api/wounds", {
+      method: healed ? "PATCH" : "DELETE",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const updated: Sheet = {
+          ...sheet,
+          wounds: [...data],
+        };
+        setSheet(updated);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const handleApplyDamage = (damageAmount: number, damageType: string) => {
+    if (!sheet) {
+      return;
+    }
+
+    const { trivialMax, lightMax, mediumMax, heavyMax } =
+      modifiers.damageThresholds;
+
+    let threshold: DamageThresholds = "Trivial";
+    if (damageAmount > trivialMax) threshold = "Light";
+    if (damageAmount > lightMax) threshold = "Medium";
+    if (damageAmount > mediumMax) threshold = "Heavy";
+    if (damageAmount > heavyMax) threshold = "Deadly";
+
+    if (threshold === "Deadly") return;
+
+    const woundName = getWoundName(threshold, damageType);
+    const wound = createWound(woundName);
+
+    const body: RequestBody<InsWound> = {
+      body: wound,
+      characterId: sheet.character.id,
+    };
+    fetch("/api/wounds", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const updated: Sheet = {
+          ...sheet,
+          wounds: [...sheet.wounds, data],
+        };
+        setSheet(updated);
+      })
+      .catch((err) => console.log(err));
+  };
 
   const values = {
     sheet,

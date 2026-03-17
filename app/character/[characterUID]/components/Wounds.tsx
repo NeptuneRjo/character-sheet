@@ -57,20 +57,20 @@ const Wounds = () => {
           <p className="mt-2 text-sm text-[#b7a387]">No wounds listed.</p>
         ) : (
           <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
-            {wounds.map(({ name, severity, id }, key) => (
+            {wounds.map((wound, key) => (
               <li
                 key={key}
                 className="flex items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"
               >
                 <div>
-                  <span>{name}</span>
+                  <span>{wound.name}</span>
                   <span className="ml-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-                    Sev {severity}
+                    Sev {wound.severity}
                   </span>
                 </div>
                 <button
                   type="button"
-                  onClick={() => handleHealWound(id)}
+                  onClick={() => handleHealWound(wound)}
                   className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
                 >
                   Heal

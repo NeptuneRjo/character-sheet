@@ -11,6 +11,7 @@ import {
   InsCharacterSkill,
   Wound,
   InsWound,
+  RequestBody,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -246,61 +247,59 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     );
 
     if (sheet) {
-      const updated: Sheet = {
-        ...sheet,
-        wounds: [...sheet.wounds, wound as Wound],
+      const body: RequestBody<InsWound> = {
+        body: wound,
+        characterId,
       };
-      updatePlayer(characterId, updated);
+      fetch("/api/wounds", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            wounds: [...sheet.wounds, data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
     }
   };
 
-  const updateWound = (characterId: string, healed: Wound) => {
-    const sheet = characters.find(
-      (character) => character.character.id === characterId
-    );
-
-    if (sheet) {
-      const wounds = sheet.wounds.map((wound) => {
-        if (wound.id === healed.id) {
-          return healed;
-        }
-        return wound;
-      });
-
-      const updated: Sheet = {
-        ...sheet,
-        wounds: [...wounds],
-      };
-
-      updatePlayer(characterId, updated);
-    }
-  };
-
-  const removeWound = (characterId: string, wound: Wound) => {
-    const sheet = characters.find(
-      (character) => character.character.id === characterId
-    );
-
-    if (sheet) {
-      const wounds = sheet.wounds.filter(({ id }) => id !== wound.id);
-
-      const updated: Sheet = {
-        ...sheet,
-        wounds: [...wounds],
-      };
-
-      updatePlayer(characterId, updated);
-    }
-  };
   const healWound = (
     characterId: string,
     wound: Wound,
     healed: Wound | null
   ) => {
-    if (healed) {
-      updateWound(characterId, healed);
-    } else {
-      removeWound(characterId, wound);
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<Wound> = {
+        body: healed ?? wound,
+        characterId,
+      };
+      fetch("/api/wounds", {
+        method: healed ? "PATCH" : "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            wounds: [...data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
     }
   };
 

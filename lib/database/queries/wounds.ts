@@ -3,19 +3,10 @@ import { characters, wounds } from "../schema";
 import { db } from "..";
 import { eq } from "drizzle-orm";
 
-export const insertWound = async (charUID: string, wound: InsWound) => {
-  const parent = await db
-    .select()
-    .from(characters)
-    .where(eq(characters.id, charUID));
-
-  if (!parent[0]) {
-    throw new Error(`Unable to find a charater with the UID: ${charUID}`);
-  }
-
+export const insertWound = async (characterId: string, wound: InsWound) => {
   const query = await db
     .insert(wounds)
-    .values({ ...wound, character_id: parent[0].id })
+    .values({ ...wound, character_id: characterId })
     .returning();
 
   return query[0];
@@ -40,15 +31,15 @@ export const deleteWound = async (woundId: number) => {
   return query;
 };
 
-export const updateWound = async (woundId: number, woundUpdate: Wound) => {
+export const updateWound = async (woundUpdate: Wound) => {
   const updated = await db
     .update(wounds)
     .set(woundUpdate)
-    .where(eq(wounds.id, woundId))
+    .where(eq(wounds.id, woundUpdate.id))
     .returning();
 
   if (!updated[0]) {
-    throw new Error(`The wound with id ${woundId} was not updated.`);
+    throw new Error(`The wound with id ${woundUpdate.id} was not updated.`);
   }
 
   const query = await db
