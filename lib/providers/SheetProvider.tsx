@@ -93,7 +93,15 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
     }
 
     fetch(`/api/characters/${characterId}`)
-      .then((res) => res.json())
+      .then((res) => {
+        const json = res.json();
+
+        if (!res.ok) {
+          throw new Error(`${json}`);
+        }
+
+        return json;
+      })
       .then((data) => {
         setSheet(data);
         setIsLoading(false);
@@ -240,7 +248,15 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       },
       body: JSON.stringify(body),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        const json = res.json();
+
+        if (!res.ok) {
+          throw new Error(`${json}`);
+        }
+
+        return json;
+      })
       .then((data) => {
         const updated: Sheet = {
           ...sheet,
@@ -281,7 +297,15 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       },
       body: JSON.stringify(body),
     })
-      .then((res) => res.json())
+      .then((res) => {
+        const json = res.json();
+
+        if (!res.ok) {
+          throw new Error(`${json}`);
+        }
+
+        return json;
+      })
       .then((data) => {
         const updated: Sheet = {
           ...sheet,

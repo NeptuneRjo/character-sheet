@@ -65,7 +65,15 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
 
     fetch("/api/gm-panel")
-      .then((res) => res.json())
+      .then((res) => {
+        const json = res.json();
+
+        if (!res.ok) {
+          throw new Error(`${json}`);
+        }
+
+        return json;
+      })
       .then((data) => {
         localStorage.setItem("gm-characters", JSON.stringify(data));
         setCharacters(data);
