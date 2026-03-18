@@ -1,6 +1,6 @@
 import { updateStats } from "@/lib/database/queries";
 import { supabase } from "@/lib/supabaseClient";
-import { Payload, RequestBody, Stats } from "@/lib/types";
+import { RequestBody, Stats } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -8,25 +8,19 @@ export async function PATCH(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  const { body, characterUID }: RequestBody<Stats> = await req.json();
+  const { body, characterId }: RequestBody<Stats> = await req.json();
 
-  if (slug) {
-    try {
-      const stats = await updateStats(Number(slug[0]), body);
+  try {
+    const stats = await updateStats(body.id, body);
 
-      return NextResponse.json(stats, { status: 200 });
-    } catch (error) {
-      return NextResponse.json(
-        {
-          message: "Something went wrong while updating the stats",
-          error: error,
-        },
-        { status: 500 }
-      );
-    }
+    return NextResponse.json(stats, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        message: "Something went wrong while updating the stats",
+        error: error,
+      },
+      { status: 500 }
+    );
   }
-  return NextResponse.json(
-    { message: "Invalid request. Provide a stat ID in the route." },
-    { status: 400 }
-  );
 }

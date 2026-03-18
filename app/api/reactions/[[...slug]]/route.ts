@@ -1,4 +1,5 @@
 import { getReactions } from "@/lib/database/queries";
+import { CharacterReaction, RequestBody } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
@@ -6,9 +7,11 @@ export async function GET(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
+  const { characterId, body }: RequestBody<CharacterReaction> =
+    await req.json();
 
   try {
-    const response = slug ? [] : await getReactions();
+    const response = slug ? [] : await getReactions(characterId);
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
