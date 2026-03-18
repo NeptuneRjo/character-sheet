@@ -6,26 +6,52 @@ export type Character = typeof schema.characters.$inferSelect;
 export type Wound = typeof schema.wounds.$inferSelect;
 export type Stats = typeof schema.stats.$inferSelect;
 
-export type CharacterTrait = typeof schema.characterTraits.$inferSelect;
-export type Trait = Omit<CharacterTrait, "id" | "character_id">;
+export type CharacterTraitSchema = typeof schema.characterTraits.$inferSelect;
+export type Trait = {
+  name: string;
+  description: string;
+  trait_id: string;
+};
+export type CharacterTrait = Trait & CharacterTraitSchema;
 
-export type CharacterSkill = typeof schema.characterSkills.$inferSelect;
-export type Skill = Omit<
-  CharacterSkill,
-  "flat_modifier" | "bonus_dice" | "character_id" | "id"
->;
+export type CharacterSkillSchema = typeof schema.characterSkills.$inferSelect;
+export type Skill = {
+  name: string;
+  ability: Abilities;
+  utility: number;
+  skill_id: string;
+};
+export type CharacterSkill = Skill & CharacterSkillSchema;
 
-export type CharacterEquipment = typeof schema.characterEquipment.$inferSelect;
-export type Equipment = Omit<
-  CharacterEquipment,
-  "id" | "character_id" | "quantity"
->;
+export type CharacterEquipmentSchema =
+  typeof schema.characterEquipment.$inferSelect;
+export type Equipment = {
+  name: string;
+  description: string;
+  equipment_id: string;
+};
+export type CharacterEquipment = Equipment & CharacterEquipmentSchema;
 
-export type CharacterAction = typeof schema.characterActions.$inferSelect;
-export type Action = Omit<CharacterAction, "id" | "character_id">;
+export type CharacterActionSchema = typeof schema.characterActions.$inferSelect;
+export type Action = {
+  name: string;
+  cost: number;
+  action_id: string;
+  note: string | null;
+  difficulty: number | null;
+};
+export type CharacterAction = Action & CharacterActionSchema;
 
-export type CharacterReaction = typeof schema.characterReactions.$inferSelect;
-export type Reaction = Omit<CharacterReaction, "id" | "character_id">;
+export type CharacterReactionSchema =
+  typeof schema.characterReactions.$inferSelect;
+export type Reaction = {
+  name: string;
+  cost: 2;
+  reaction_id: string;
+  note: string | null;
+  difficulty: number | null;
+};
+export type CharacterReaction = Reaction & CharacterReactionSchema;
 
 export type Sheet = {
   character: Character;
