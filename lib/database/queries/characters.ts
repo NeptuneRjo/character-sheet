@@ -11,6 +11,13 @@ import {
   wounds,
 } from "../schema";
 import { eq, getTableColumns, sql } from "drizzle-orm";
+import {
+  traits as traitsData,
+  equipment as equipmentData,
+  skills as skillsData,
+  actions as actionsData,
+  reactions as reactionsData,
+} from "@/app/data";
 
 /**
  * Retrieves the list of characters.
@@ -109,7 +116,13 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
       const isDupe = acc.traits.some((trait) => trait.id === traits.id);
 
       if (!isDupe) {
-        acc.traits.push(traits);
+        // find the trait in the data file and combine the values for the sheet
+        const characterTrait = traitsData.find(
+          (trait) => trait.trait_id === traits.trait_id
+        );
+        if (characterTrait) {
+          acc.traits.push({ ...characterTrait, ...traits });
+        }
       }
     }
 
@@ -129,7 +142,12 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
       const isDupe = acc.equipment.some((item) => item.id === equipment.id);
 
       if (!isDupe) {
-        acc.equipment.push(equipment);
+        const characterEquipment = equipmentData.find(
+          (item) => item.equipment_id === equipment.equipment_id
+        );
+        if (characterEquipment) {
+          acc.equipment.push({ ...characterEquipment, ...equipment });
+        }
       }
     }
 
@@ -137,7 +155,12 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
       const isDupe = acc.actions.some((action) => action.id === actions.id);
 
       if (!isDupe) {
-        acc.actions.push(actions);
+        const characterActions = actionsData.find(
+          (action) => action.action_id === actions.action_id
+        );
+        if (characterActions) {
+          acc.actions.push({ ...characterActions, ...actions });
+        }
       }
     }
 
@@ -147,7 +170,12 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
       );
 
       if (!isDupe) {
-        acc.reactions.push(reactions);
+        const characterReactions = reactionsData.find(
+          (reaction) => reaction.reaction_id === reactions.reaction_id
+        );
+        if (characterReactions) {
+          acc.reactions.push({ ...characterReactions, ...reactions });
+        }
       }
     }
 
@@ -155,7 +183,12 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
       const isDupe = acc.skills.some((skill) => skill.id === skills.id);
 
       if (!isDupe) {
-        acc.skills.push(skills);
+        const characterSkills = skillsData.find(
+          (skill) => skill.skill_id === skills.skill_id
+        );
+        if (characterSkills) {
+          acc.skills.push({ ...characterSkills, ...skills });
+        }
       }
     }
     return acc;
