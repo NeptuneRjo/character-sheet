@@ -64,8 +64,11 @@ const Wounds = ({ sheet }: Props) => {
   };
 
   return (
-    <>
-      <div className="flex flex-wrap items-center justify-center gap-3">
+    <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
+      <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+        Wounds
+      </p>
+      <div className="flex flex-wrap items-center justify-center gap-3 py-3">
         <div className="flex-1 flex gap-3">
           <select
             value={woundName}
@@ -153,7 +156,7 @@ const Wounds = ({ sheet }: Props) => {
           </ul>
         )}
       </div>
-    </>
+    </div>
   );
 };
 
