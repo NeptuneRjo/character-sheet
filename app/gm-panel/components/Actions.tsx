@@ -1,6 +1,6 @@
 "use client";
 
-import { Action, Sheet } from "@/lib/types";
+import { Action, CharacterActionSchema, Sheet } from "@/lib/types";
 import { actions } from "@/app/data";
 
 interface Props {
@@ -8,6 +8,18 @@ interface Props {
 }
 
 const Actions = ({ character }: Props) => {
+  const characterActions = (data: CharacterActionSchema[]) => {
+    return data.map((action) => {
+      const actionData = actions.find(
+        ({ action_id }) => action_id === action.action_id
+      );
+      if (!actionData) {
+        throw new Error();
+      }
+      return { ...actionData, ...action };
+    });
+  };
+
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
@@ -34,7 +46,7 @@ const Actions = ({ character }: Props) => {
         </button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-        {character.actions.map((action, key) => (
+        {characterActions(character.actions).map((action, key) => (
           <li
             key={key}
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"

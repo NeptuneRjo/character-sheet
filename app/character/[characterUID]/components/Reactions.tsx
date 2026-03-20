@@ -1,6 +1,8 @@
 "use client";
 
+import { reactions } from "@/app/data";
 import { SheetContext } from "@/lib/providers/SheetProvider";
+import { CharacterReactionSchema } from "@/lib/types";
 import { useContext, useState } from "react";
 
 const Reactions = () => {
@@ -11,10 +13,22 @@ const Reactions = () => {
     return <div>Loading...</div>;
   }
 
-  const { reactions, character } = sheet;
-  const { ward_current, isCaster } = character;
+  // const { reactions, character } = sheet;
+  const { ward_current, isCaster } = sheet.character;
   const { maxWard, reactionPhysicalityBonus } = modifiers;
   const { handleRefillWard, handleSpendAp, handleSpendWard } = handlers;
+
+  const characterReactions = (data: CharacterReactionSchema[]) => {
+    return data.map((reaction) => {
+      const reactionData = reactions.find(
+        ({ reaction_id }) => reaction_id === reaction.reaction_id
+      );
+      if (!reactionData) {
+        throw new Error();
+      }
+      return { ...reactionData, ...reaction };
+    });
+  };
 
   const defaultReactions = [
     {
@@ -49,22 +63,24 @@ const Reactions = () => {
             <p className="mt-2 text-sm text-[#b7a387]">{note}</p>
           </button>
         ))}
-        {reactions.map(({ name, cost, note }, key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => handleSpendAp(cost)}
-            className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
-          >
-            <div className="flex items-center justify-between">
-              <span className="font-semibold">{name}</span>
-              <span className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-                {cost} AP
-              </span>
-            </div>
-            <p className="mt-2 text-sm text-[#b7a387]">{note}</p>
-          </button>
-        ))}
+        {characterReactions(sheet.reactions).map(
+          ({ name, cost, note }, key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => handleSpendAp(cost)}
+              className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-left text-sm text-[#f0e4cf] transition hover:border-[#8b6a3f]"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold">{name}</span>
+                <span className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+                  {cost} AP
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-[#b7a387]">{note}</p>
+            </button>
+          )
+        )}
         {isCaster && (
           <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2">
             <div className="flex items-center justify-between">

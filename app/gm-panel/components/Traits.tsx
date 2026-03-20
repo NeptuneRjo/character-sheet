@@ -1,6 +1,12 @@
 "use client";
 
-import { CharacterTrait, InsCharacterTrait, Sheet, Trait } from "@/lib/types";
+import {
+  CharacterTrait,
+  CharacterTraitSchema,
+  InsCharacterTrait,
+  Sheet,
+  Trait,
+} from "@/lib/types";
 import { traits } from "@/app/data";
 import { useContext, useState } from "react";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
@@ -34,6 +40,18 @@ const Traits = ({ sheet }: Props) => {
     removeTrait(sheet.character.id, trait);
   };
 
+  const characterTraits = (data: CharacterTraitSchema[]) => {
+    return data.map((trait) => {
+      const traitData = traits.find(
+        ({ trait_id }) => trait_id === trait.trait_id
+      );
+      if (!traitData) {
+        throw new Error();
+      }
+      return { ...traitData, ...trait };
+    });
+  };
+
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
@@ -60,7 +78,7 @@ const Traits = ({ sheet }: Props) => {
         </button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-        {sheet.traits.map((trait, key) => (
+        {characterTraits(sheet.traits).map((trait, key) => (
           <li
             key={key}
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"

@@ -1,6 +1,8 @@
 "use client";
 
+import { actions } from "@/app/data";
 import { SheetContext } from "@/lib/providers/SheetProvider";
+import { CharacterActionSchema } from "@/lib/types";
 import { useContext } from "react";
 
 const Actions = () => {
@@ -10,8 +12,7 @@ const Actions = () => {
     return <div>loading...</div>;
   }
 
-  const { character, actions } = sheet;
-  const { action_points } = character;
+  const { action_points } = sheet.character;
   const { effectiveMoveSpeed } = modifiers;
   const { handleSpendAp } = handlers;
 
@@ -21,6 +22,18 @@ const Actions = () => {
     { name: "Hide", cost: 1 },
     { name: "Weapon Attack", cost: 2 },
   ];
+
+  const characterActions = (data: CharacterActionSchema[]) => {
+    return data.map((action) => {
+      const actionData = actions.find(
+        ({ action_id }) => action_id === action.action_id
+      );
+      if (!actionData) {
+        throw new Error();
+      }
+      return { ...actionData, ...action };
+    });
+  };
 
   return (
     <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] px-5 py-4">
@@ -69,7 +82,7 @@ const Actions = () => {
             </span>
           </button>
         ))}
-        {actions.map((action, key) => (
+        {characterActions(sheet.actions).map((action, key) => (
           <button
             key={key}
             type="button"

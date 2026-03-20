@@ -1,7 +1,13 @@
 "use client";
 
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
-import { CharacterSkill, InsCharacterSkill, Sheet, Skill } from "@/lib/types";
+import {
+  CharacterSkill,
+  CharacterSkillSchema,
+  InsCharacterSkill,
+  Sheet,
+  Skill,
+} from "@/lib/types";
 import { useContext, useState } from "react";
 import { skills } from "../../data";
 
@@ -37,6 +43,18 @@ const Skills = ({ character }: Props) => {
 
   const handleRemoveSkill = (skill: CharacterSkill) => {
     removeSkill(character.character.id, skill);
+  };
+
+  const characterSkills = (data: CharacterSkillSchema[]) => {
+    return data.map((skill) => {
+      const skillData = skills.find(
+        ({ skill_id }) => skill_id === skill.skill_id
+      );
+      if (!skillData) {
+        throw new Error();
+      }
+      return { ...skillData, ...skill };
+    });
   };
 
   return (
@@ -98,7 +116,7 @@ const Skills = ({ character }: Props) => {
             </p>
           ) : (
             <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-              {character.skills.map((skill, key) => (
+              {characterSkills(character.skills).map((skill, key) => (
                 <li
                   key={key}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"

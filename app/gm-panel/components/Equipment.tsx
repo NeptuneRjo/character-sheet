@@ -1,6 +1,11 @@
 "use client";
 
-import { CharacterEquipment, InsCharacterEquipment, Sheet } from "@/lib/types";
+import {
+  CharacterEquipment,
+  CharacterEquipmentSchema,
+  InsCharacterEquipment,
+  Sheet,
+} from "@/lib/types";
 import { equipment } from "@/app/data";
 import { useContext, useState } from "react";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
@@ -36,6 +41,18 @@ const Equipment = ({ sheet }: Props) => {
     removeEquipment(sheet.character.id, equipment);
   };
 
+  const characterEquipment = (data: CharacterEquipmentSchema[]) => {
+    return data.map((item) => {
+      const equipmentData = equipment.find(
+        ({ equipment_id }) => equipment_id === item.equipment_id
+      );
+      if (!equipmentData) {
+        throw new Error();
+      }
+      return { ...equipmentData, ...item };
+    });
+  };
+
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
@@ -62,7 +79,7 @@ const Equipment = ({ sheet }: Props) => {
         </button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-        {sheet.equipment.map((equipment, key) => (
+        {characterEquipment(sheet.equipment).map((equipment, key) => (
           <li
             key={key}
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"

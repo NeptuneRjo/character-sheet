@@ -1,11 +1,23 @@
 "use client";
 
-import { Reaction, Sheet } from "@/lib/types";
+import { CharacterReactionSchema, Reaction, Sheet } from "@/lib/types";
 import { reactions } from "@/app/data";
 
 interface Props {
   character: Sheet;
 }
+
+const characterReactions = (data: CharacterReactionSchema[]) => {
+  return data.map((reaction) => {
+    const reactionData = reactions.find(
+      ({ reaction_id }) => reaction_id === reaction.reaction_id
+    );
+    if (!reactionData) {
+      throw new Error();
+    }
+    return { ...reactionData, ...reaction };
+  });
+};
 
 const Reactions = ({ character }: Props) => {
   return (
@@ -34,7 +46,7 @@ const Reactions = ({ character }: Props) => {
         </button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-        {character.reactions.map((reaction, key) => (
+        {characterReactions(character.reactions).map((reaction, key) => (
           <li
             key={key}
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"

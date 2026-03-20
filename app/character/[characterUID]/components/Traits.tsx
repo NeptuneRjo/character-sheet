@@ -1,6 +1,8 @@
 "use client";
 
+import { traits } from "@/app/data";
 import { SheetContext } from "@/lib/providers/SheetProvider";
+import { CharacterTraitSchema } from "@/lib/types";
 import { useContext } from "react";
 
 const Traits = () => {
@@ -10,7 +12,17 @@ const Traits = () => {
     return <div>loading...</div>;
   }
 
-  const { traits } = sheet;
+  const characterTraits = (data: CharacterTraitSchema[]) => {
+    return data.map((trait) => {
+      const traitData = traits.find(
+        ({ trait_id }) => trait_id === trait.trait_id
+      );
+      if (!traitData) {
+        throw new Error();
+      }
+      return { ...traitData, ...trait };
+    });
+  };
 
   return (
     <div className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-5">
@@ -19,7 +31,7 @@ const Traits = () => {
         <p className="mt-2 text-sm text-[#b7a387]">None listed.</p>
       ) : (
         <ul className="mt-3 space-y-2 text-sm text-[#f0e4cf]">
-          {traits.map((trait, key) => (
+          {characterTraits(sheet.traits).map((trait, key) => (
             <li
               className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-3 py-2"
               key={key}
