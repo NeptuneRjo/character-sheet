@@ -55,13 +55,13 @@ export type CharacterReaction = Reaction & CharacterReactionSchema;
 
 export type Sheet = {
   character: Character;
-  traits: CharacterTrait[];
+  traits: CharacterTraitSchema[];
   stats: Stats;
   wounds: Wound[];
-  equipment: CharacterEquipment[];
-  skills: CharacterSkill[];
-  actions: CharacterAction[];
-  reactions: CharacterReaction[];
+  equipment: CharacterEquipmentSchema[];
+  skills: CharacterSkillSchema[];
+  actions: CharacterActionSchema[];
+  reactions: CharacterReactionSchema[];
 };
 
 // Use when typing any object that's not directly from the database.
