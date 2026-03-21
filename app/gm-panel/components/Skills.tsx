@@ -12,10 +12,10 @@ import { useContext, useState } from "react";
 import { skills } from "../../data";
 
 interface Props {
-  character: Sheet;
+  sheet: Sheet;
 }
 
-const Skills = ({ character }: Props) => {
+const Skills = ({ sheet }: Props) => {
   const { addSkill, removeSkill } = useContext(GMPanelContext);
 
   const [selectedSkill, setSelectedSkill] = useState<string>(
@@ -33,16 +33,16 @@ const Skills = ({ character }: Props) => {
 
     const characterSkill: InsCharacterSkill = {
       ...skill,
-      character_id: character.character.id,
+      character_id: sheet.character.id,
       flat_modifier: flatModifier,
       bonus_dice: bonusDice,
     };
 
-    addSkill(character.character.id, characterSkill);
+    addSkill(sheet.character.id, characterSkill);
   };
 
   const handleRemoveSkill = (skill: CharacterSkill) => {
-    removeSkill(character.character.id, skill);
+    removeSkill(sheet.character.id, skill);
   };
 
   const characterSkills = (data: CharacterSkillSchema[]) => {
@@ -110,13 +110,13 @@ const Skills = ({ character }: Props) => {
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Modified Skills
           </p>
-          {character.skills.length === 0 ? (
+          {sheet.skills.length === 0 ? (
             <p className="mt-2 text-sm text-[#b7a387]">
               No skill bonuses applied.
             </p>
           ) : (
             <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-              {characterSkills(character.skills).map((skill, key) => (
+              {characterSkills(sheet.skills).map((skill, key) => (
                 <li
                   key={key}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"
