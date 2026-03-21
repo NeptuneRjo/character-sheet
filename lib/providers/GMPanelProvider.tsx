@@ -15,6 +15,10 @@ import {
   CharacterTrait,
   InsCharacterEquipment,
   CharacterEquipment,
+  InsCharacterAction,
+  CharacterAction,
+  InsCharacterReaction,
+  CharacterReaction,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -502,13 +506,121 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const addAction = () => {};
+  const addAction = (characterId: string, action: InsCharacterAction) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
 
-  const removeAction = () => {};
+    if (sheet) {
+      const body: RequestBody<InsCharacterAction> = {
+        body: action,
+        characterId,
+      };
+      fetch("/api/actions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            actions: [...sheet.actions, data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
 
-  const addReaction = () => {};
+  const removeAction = (characterId: string, action: CharacterAction) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
 
-  const removeReaction = () => {};
+    if (sheet) {
+      const body: RequestBody<CharacterAction> = {
+        body: action,
+        characterId,
+      };
+      fetch("/api/actions", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            actions: [...data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const addReaction = (characterId: string, reaction: InsCharacterReaction) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<InsCharacterReaction> = {
+        body: reaction,
+        characterId,
+      };
+      fetch("/api/reactions", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            reactions: [...sheet.reactions, data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const removeReaction = (characterId: string, reaction: CharacterReaction) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<CharacterReaction> = {
+        body: reaction,
+        characterId,
+      };
+      fetch("/api/reactions", {
+        method: "DELETE",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            reactions: [data],
+          };
+          updatePlayer(characterId, updated);
+        })
+        .catch((err) => console.log(err));
+    }
+  };
 
   const values = {
     characters,

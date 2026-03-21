@@ -167,7 +167,12 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
 /**
  * Create and retrieve a character.
  */
-// export const createCharacter = async (): Promise<Character> => {};
+export const createCharacter = async () => {
+  // Create a character using default values
+  // Create stats for character (all 2s)
+  // Create actions for character (default actions)
+  // Create reactions for character (default reactions)
+};
 
 /**
  * Update and retrieve a character.

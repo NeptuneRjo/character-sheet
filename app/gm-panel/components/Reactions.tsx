@@ -1,25 +1,59 @@
 "use client";
 
-import { CharacterReactionSchema, Reaction, Sheet } from "@/lib/types";
+import {
+  CharacterReaction,
+  CharacterReactionSchema,
+  InsCharacterReaction,
+  Reaction,
+  Sheet,
+} from "@/lib/types";
 import { reactions } from "@/app/data";
+import { useContext, useState } from "react";
+import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 
 interface Props {
-  character: Sheet;
+  sheet: Sheet;
 }
 
-const characterReactions = (data: CharacterReactionSchema[]) => {
-  return data.map((reaction) => {
-    const reactionData = reactions.find(
-      ({ reaction_id }) => reaction_id === reaction.reaction_id
-    );
-    if (!reactionData) {
-      throw new Error();
-    }
-    return { ...reactionData, ...reaction };
-  });
-};
+const Reactions = ({ sheet }: Props) => {
+  const { addReaction, removeReaction } = useContext(GMPanelContext);
+  const [selectedReaction, setSelectedReaction] = useState<string>(
+    reactions[0].reaction_id
+  );
 
-const Reactions = ({ character }: Props) => {
+  const handleAddReaction = () => {
+    const reaction = reactions.find(
+      (reaction) => reaction.reaction_id === selectedReaction
+    );
+
+    if (!reaction) {
+      return;
+    }
+
+    const characterReaction: InsCharacterReaction = {
+      reaction_id: reaction.reaction_id,
+      character_id: sheet.character.id,
+    };
+
+    addReaction(sheet.character.id, characterReaction);
+  };
+
+  const handleRemoveReaction = (action: CharacterReaction) => {
+    removeReaction(sheet.character.id, action);
+  };
+
+  const characterReactions = (data: CharacterReactionSchema[]) => {
+    return data.map((reaction) => {
+      const reactionData = reactions.find(
+        ({ reaction_id }) => reaction_id === reaction.reaction_id
+      );
+      if (!reactionData) {
+        throw new Error();
+      }
+      return { ...reactionData, ...reaction };
+    });
+  };
+
   return (
     <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
       <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
@@ -39,14 +73,14 @@ const Reactions = ({ character }: Props) => {
         </select>
         <button
           type="button"
-          // onClick={() => handleApplyWound()}
+          onClick={() => handleAddReaction()}
           className="rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
         >
           Add
         </button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
-        {characterReactions(character.reactions).map((reaction, key) => (
+        {characterReactions(sheet.reactions).map((reaction, key) => (
           <li
             key={key}
             className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2"
@@ -54,13 +88,13 @@ const Reactions = ({ character }: Props) => {
             <div>
               <span>{reaction.name}</span>
               <span className="ml-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-                {reaction.cost}
+                {reaction.cost} AP
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
               <button
                 type="button"
-                // onClick={() => handleRemoveSkill(skill)}
+                onClick={() => handleRemoveReaction(reaction)}
                 className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
               >
                 Remove
