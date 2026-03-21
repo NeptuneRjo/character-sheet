@@ -7,11 +7,11 @@ import { useContext, useEffect } from "react";
 import { Actions, Equipment, Reactions, Skills, Traits, Wounds } from ".";
 
 interface Props {
-  character: Sheet;
+  sheet: Sheet;
 }
 
-const Panel = ({ character }: Props) => {
-  const { setters } = useContext(GMPanelContext);
+const Panel = ({ sheet }: Props) => {
+  const { setters, saveCharacter } = useContext(GMPanelContext);
   const {
     setResilienceCurrent,
     setResilienceReserves,
@@ -21,11 +21,11 @@ const Panel = ({ character }: Props) => {
     setPhysicalBuild,
   } = setters;
 
-  const { modifiers, setCharacter } = useCharacterModifiers(character);
+  const { modifiers, setCharacter } = useCharacterModifiers(sheet);
 
   useEffect(() => {
-    setCharacter(character);
-  }, [character]);
+    setCharacter(sheet);
+  }, [sheet]);
 
   const { maxResilience, effectiveResilience } = modifiers;
 
@@ -56,12 +56,18 @@ const Panel = ({ character }: Props) => {
 
   return (
     <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-[#f0e4cf]">
-          {character.character.name}
+      <div className="mb-4 flex items-center justify-between gap-6 py-2">
+        <h2 className="text-xl font-semibold text-[#f0e4cf] flex-1">
+          {sheet.character.name}
         </h2>
+        <button
+          className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
+          onClick={() => saveCharacter(sheet.character.id)}
+        >
+          Save Character
+        </button>
         <a
-          href={`/character/${character.character.id}`}
+          href={`/character/${sheet.character.id}`}
           className="text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387] hover:text-[#f0d9a8]"
         >
           View Sheet →
@@ -75,10 +81,10 @@ const Panel = ({ character }: Props) => {
             <input
               type="number"
               max={effectiveResilience}
-              value={character.character.resilience_current}
+              value={sheet.character.resilience_current}
               onChange={(event) =>
                 setResilienceCurrent(
-                  character.character.id,
+                  sheet.character.id,
                   Number(event.target.value)
                 )
               }
@@ -89,10 +95,10 @@ const Panel = ({ character }: Props) => {
             Resilience Reserves
             <input
               type="number"
-              value={character.character.resilience_reserves}
+              value={sheet.character.resilience_reserves}
               onChange={(event) =>
                 setResilienceReserves(
-                  character.character.id,
+                  sheet.character.id,
                   Number(event.target.value)
                 )
               }
@@ -103,12 +109,9 @@ const Panel = ({ character }: Props) => {
             Action Points
             <input
               type="number"
-              value={character.character.action_points}
+              value={sheet.character.action_points}
               onChange={(event) =>
-                setActionPoints(
-                  character.character.id,
-                  Number(event.target.value)
-                )
+                setActionPoints(sheet.character.id, Number(event.target.value))
               }
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             />
@@ -123,9 +126,9 @@ const Panel = ({ character }: Props) => {
             Move Speed (m)
             <input
               type="number"
-              value={character.character.baseMoveSpeed}
+              value={sheet.character.baseMoveSpeed}
               onChange={(event) =>
-                setMoveSpeed(character.character.id, Number(event.target.value))
+                setMoveSpeed(sheet.character.id, Number(event.target.value))
               }
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             />
@@ -133,10 +136,10 @@ const Panel = ({ character }: Props) => {
           <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Physical Build
             <select
-              value={character.character.physical_build}
+              value={sheet.character.physical_build}
               onChange={(event) =>
                 setPhysicalBuild(
-                  character.character.id,
+                  sheet.character.id,
                   event.target.value as PhysicalBuilds
                 )
               }
@@ -149,7 +152,7 @@ const Panel = ({ character }: Props) => {
           </label>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          {Object.entries(character.stats).map(([stat, value], key) => {
+          {Object.entries(sheet.stats).map(([stat, value], key) => {
             if (shouldDisplayStat(stat) && value !== null) {
               return (
                 <label
@@ -162,7 +165,7 @@ const Panel = ({ character }: Props) => {
                     value={value}
                     onChange={(event) =>
                       setStats(
-                        character.character.id,
+                        sheet.character.id,
                         stat as StatLabels,
                         Number(event.target.value)
                       )
@@ -174,32 +177,38 @@ const Panel = ({ character }: Props) => {
             }
           })}
         </div>
-        <Skills character={character} />
+        <Skills sheet={sheet} />
         <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Traits, Equipment, Actions, Reactions
           </p>
           <div className="mt-3 grid gap-3 grid-cols-2">
-            <Traits sheet={character} />
-            <Equipment sheet={character} />
+            <Traits sheet={sheet} />
+            <Equipment sheet={sheet} />
           </div>
           <div className="mt-3 grid gap-3 grid-cols-2">
-            <Actions sheet={character} />
-            <Reactions sheet={character} />
+            <Actions sheet={sheet} />
+            <Reactions sheet={sheet} />
           </div>
         </div>
-        <Wounds sheet={character} />
+        <Wounds sheet={sheet} />
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            // onClick={() => handleStartTurn(character.id)}
+            // onClick={() => handleStartTurn(sheet.id)}
             className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
           >
             Start Turn
           </button>
           <button
+            className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
+            onClick={() => saveCharacter(sheet.character.id)}
+          >
+            Save Character
+          </button>
+          <button
             type="button"
-            // onClick={() => handleReset(character.id)}
+            // onClick={() => handleReset(sheet.id)}
             className="rounded-full border border-[#5c4a33] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387]"
           >
             Reset
