@@ -27,7 +27,7 @@ const GMPanel = () => {
   return (
     <div className="grid gap-6">
       {characters?.map((character, key) => (
-        <Panel character={character} key={key} />
+        <Panel sheet={character} key={key} />
       ))}
     </div>
   );

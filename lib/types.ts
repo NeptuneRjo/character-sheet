@@ -223,6 +223,7 @@ export type GMPanelContextType = {
   removeAction: (characterId: string, action: CharacterAction) => void;
   addReaction: (characterId: string, reaction: InsCharacterReaction) => void;
   removeReaction: (characterId: string, reaction: CharacterReaction) => void;
+  saveCharacter: (characterId: string) => void;
 };
 
 export type RequestBody<t> = {

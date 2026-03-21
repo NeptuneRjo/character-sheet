@@ -19,6 +19,7 @@ import {
   CharacterAction,
   InsCharacterReaction,
   CharacterReaction,
+  Character,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -51,6 +52,7 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   removeAction: () => initializationError("removeAction"),
   addReaction: () => initializationError("addReaction"),
   removeReaction: () => initializationError("removeReaction"),
+  saveCharacter: () => initializationError("saveCharacter"),
 });
 
 export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
@@ -622,6 +624,34 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const saveCharacter = (characterId: string) => {
+    const sheet = characters.find(
+      (character) => character.character.id === characterId
+    );
+
+    if (sheet) {
+      const body: RequestBody<Sheet> = {
+        body: sheet,
+        characterId,
+      };
+      fetch("/api/characters", {
+        method: "PATCH",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          const updated: Sheet = {
+            ...sheet,
+            ...data,
+          };
+          updatePlayer(characterId, updated);
+        });
+    }
+  };
+
   const values = {
     characters,
     isLoading,
@@ -647,6 +677,7 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     removeAction,
     addReaction,
     removeReaction,
+    saveCharacter,
   };
 
   return (

@@ -3,10 +3,10 @@ import { db } from "..";
 import { stats } from "../schema";
 import { eq } from "drizzle-orm";
 
-export const updateStats = async (statId: number, stat: Stats) => {
+export const updateStats = async (statId: number, update: Stats) => {
   const updated = await db
     .update(stats)
-    .set(stat)
+    .set(update)
     .where(eq(stats.id, statId))
     .returning();
 

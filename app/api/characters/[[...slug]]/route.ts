@@ -2,6 +2,7 @@ import {
   getCharacter,
   getCharacters,
   updateCharacter,
+  updateStats,
 } from "@/lib/database/queries";
 import { supabase } from "@/lib/supabaseClient";
 import { Character, RequestBody, Sheet } from "@/lib/types";
@@ -33,13 +34,21 @@ export async function PATCH(
   { params }: { params: Promise<{ slug?: string[] | undefined }> }
 ) {
   const { slug } = await params;
-  const { body, characterId }: RequestBody<Partial<Character>> =
-    await req.json();
+  const { body, characterId }: RequestBody<Sheet> = await req.json();
 
   try {
-    const character = await updateCharacter(characterId, body);
+    const { character, stats } = body;
 
-    return NextResponse.json(character, { status: 200 });
+    const updatedCharacter = await updateCharacter(characterId, character);
+    const updatedStats = await updateStats(stats.id, stats);
+
+    const updatedSheet: Sheet = {
+      ...body,
+      character: updatedCharacter,
+      stats: updatedStats,
+    };
+
+    return NextResponse.json(updatedSheet, { status: 200 });
   } catch (error) {
     return NextResponse.json({
       message: "Something went wrong while updating a character",
