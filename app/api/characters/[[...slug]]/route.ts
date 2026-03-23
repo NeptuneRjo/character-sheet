@@ -1,11 +1,13 @@
 import {
   getCharacter,
   getCharacters,
+  insertCharacter,
+  insertStats,
   updateCharacter,
   updateStats,
 } from "@/lib/database/queries";
 import { supabase } from "@/lib/supabaseClient";
-import { Character, RequestBody, Sheet } from "@/lib/types";
+import { Character, InsCharacter, RequestBody, Sheet } from "@/lib/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -49,6 +51,28 @@ export async function PATCH(
     };
 
     return NextResponse.json(updatedSheet, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({
+      message: "Something went wrong while updating a character",
+      error: error,
+    });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ slug?: string[] | undefined }> }
+) {
+  const { slug } = await params;
+  const { body, characterId }: RequestBody<InsCharacter> = await req.json();
+
+  try {
+    const character = await insertCharacter(body);
+    const stats = await insertStats({ character_id: character.id });
+
+    const sheet = await getCharacter(character.id);
+
+    return NextResponse.json(sheet, { status: 200 });
   } catch (error) {
     return NextResponse.json({
       message: "Something went wrong while updating a character",

@@ -20,6 +20,7 @@ import {
   InsCharacterReaction,
   CharacterReaction,
   Character,
+  InsCharacter,
 } from "../types";
 import { supabase } from "../supabaseClient";
 
@@ -53,6 +54,7 @@ export const GMPanelContext = createContext<GMPanelContextType>({
   addReaction: () => initializationError("addReaction"),
   removeReaction: () => initializationError("removeReaction"),
   saveCharacter: () => initializationError("saveCharacter"),
+  createCharacter: () => initializationError("createCharacter"),
 });
 
 export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
@@ -652,6 +654,34 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const createCharacter = (name: string | undefined) => {
+    const body: RequestBody<InsCharacter> = {
+      body: { name, physical_build: "Average" },
+      characterId: "",
+    };
+    fetch("/api/characters", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
+        }
+        throw new Error("Error during character creation.");
+      })
+      .then((data) => {
+        const updatedCharacters = [...characters, data];
+        setCharacters(updatedCharacters);
+        localStorage.setItem(
+          "gm-characters",
+          JSON.stringify(updatedCharacters)
+        );
+      });
+  };
+
   const values = {
     characters,
     isLoading,
@@ -678,6 +708,7 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     addReaction,
     removeReaction,
     saveCharacter,
+    createCharacter,
   };
 
   return (

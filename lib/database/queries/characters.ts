@@ -1,4 +1,4 @@
-import { Character, Sheet, Stats } from "@/lib/types";
+import { Character, InsCharacter, Sheet, Stats } from "@/lib/types";
 import { db } from "../index";
 import {
   characterActions,
@@ -167,11 +167,14 @@ export const getCharacter = async (characterId: string): Promise<Sheet> => {
 /**
  * Create and retrieve a character.
  */
-export const createCharacter = async () => {
+export const insertCharacter = async (character: InsCharacter) => {
   // Create a character using default values
   // Create stats for character (all 2s)
   // Create actions for character (default actions)
   // Create reactions for character (default reactions)
+  const query = await db.insert(characters).values(character).returning();
+
+  return query[0];
 };
 
 /**
