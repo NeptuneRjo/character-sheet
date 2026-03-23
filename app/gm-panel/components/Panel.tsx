@@ -152,30 +152,72 @@ const Panel = ({ sheet }: Props) => {
           </label>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          {Object.entries(sheet.stats).map(([stat, value], key) => {
-            if (shouldDisplayStat(stat) && value !== null) {
-              return (
-                <label
-                  key={key}
-                  className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]"
-                >
-                  {labels(stat)}
-                  <input
-                    type="number"
-                    value={value}
-                    onChange={(event) =>
-                      setStats(
-                        sheet.character.id,
-                        stat as StatLabels,
-                        Number(event.target.value)
-                      )
-                    }
-                    className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-                  />
-                </label>
-              );
-            }
-          })}
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            PHYSICALITY
+            <input
+              type="number"
+              value={sheet.stats.phy}
+              onChange={(event) =>
+                setStats(sheet.character.id, "phy", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            SENSE
+            <input
+              type="number"
+              value={sheet.stats.sen}
+              onChange={(event) =>
+                setStats(sheet.character.id, "sen", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            VITALITY
+            <input
+              type="number"
+              value={sheet.stats.vit}
+              onChange={(event) =>
+                setStats(sheet.character.id, "vit", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            ACUITY
+            <input
+              type="number"
+              value={sheet.stats.acu}
+              onChange={(event) =>
+                setStats(sheet.character.id, "acu", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            PRESENCE
+            <input
+              type="number"
+              value={sheet.stats.pre}
+              onChange={(event) =>
+                setStats(sheet.character.id, "pre", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
+          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+            WILLPOWER
+            <input
+              type="number"
+              value={sheet.stats.wil}
+              onChange={(event) =>
+                setStats(sheet.character.id, "wil", Number(event.target.value))
+              }
+              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+            />
+          </label>
         </div>
         <Skills sheet={sheet} />
         <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
