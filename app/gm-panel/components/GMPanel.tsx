@@ -3,6 +3,7 @@
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { useContext, useEffect, useState } from "react";
 import { Login, Panel } from ".";
+import { Button } from "@/components";
 
 const GMPanel = () => {
   const { characters, isLoading, getCharacters, createCharacter } =
@@ -45,23 +46,15 @@ const GMPanel = () => {
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             />
           </label>
-          <button
-            className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8] w-50"
-            onClick={() => handleCreateCharacter()}
-          >
+          <Button onClick={() => handleCreateCharacter()} className="w-50">
             Create
-          </button>
+          </Button>
         </div>
         <div className="flex justify-center flex-col items-end gap-4 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Enter Combat Mode
           </p>
-          <button
-            className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-            // onClick={() => saveCharacter(sheet.character.id)}
-          >
-            Start
-          </button>
+          <Button onClick={() => console.log()}>Start</Button>
         </div>
       </section>
       {characters?.map((character, key) => (

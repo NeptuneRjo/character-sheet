@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components";
 import { SheetContext } from "@/lib/providers/SheetProvider";
 import { useContext, useState } from "react";
 
@@ -45,13 +46,16 @@ const Wounds = () => {
               <option>Poison</option>
             </select>
           </div>
-          <button
+          {/* <button
             type="button"
             onClick={() => handleApplyDamage(damageAmount, damageType)}
             className="rounded-full border border-[#8b6a3f] bg-[#19130d] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
           >
             Apply
-          </button>
+          </button> */}
+          <Button onClick={() => handleApplyDamage(damageAmount, damageType)}>
+            Apply
+          </Button>
         </div>
         {wounds.length === 0 ? (
           <p className="mt-2 text-sm text-[#b7a387]">No wounds listed.</p>

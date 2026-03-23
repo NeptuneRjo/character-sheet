@@ -5,6 +5,7 @@ import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { PhysicalBuilds, Sheet, StatLabels } from "@/lib/types";
 import { useContext, useEffect } from "react";
 import { Actions, Equipment, Reactions, Skills, Traits, Wounds } from ".";
+import { Button } from "@/components";
 
 interface Props {
   sheet: Sheet;
@@ -29,43 +30,18 @@ const Panel = ({ sheet }: Props) => {
 
   const { maxResilience, effectiveResilience } = modifiers;
 
-  const labels = (stat: string) => {
-    switch (stat.toLowerCase()) {
-      case "phy":
-        return "Physicality";
-      case "vit":
-        return "Vitality";
-      case "sen":
-        return "Sense";
-      case "wil":
-        return "Willpower";
-      case "acu":
-        return "Acuity";
-      case "pre":
-        return "Presence";
-    }
-  };
-
-  const shouldDisplayStat = (stat: string) => {
-    return !(
-      stat === null ||
-      stat.toLowerCase() === "id" ||
-      stat.toLowerCase() === "character_id"
-    );
-  };
-
   return (
     <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6">
       <div className="mb-4 flex items-center justify-between gap-6 py-2">
         <h2 className="text-xl font-semibold text-[#f0e4cf] flex-1">
           {sheet.character.name}
         </h2>
-        <button
-          className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
+        <Button
+          variant="primary"
           onClick={() => saveCharacter(sheet.character.id)}
         >
           Save Character
-        </button>
+        </Button>
         <a
           href={`/character/${sheet.character.id}`}
           className="text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387] hover:text-[#f0d9a8]"
@@ -235,26 +211,14 @@ const Panel = ({ sheet }: Props) => {
         </div>
         <Wounds sheet={sheet} />
         <div className="flex flex-wrap gap-3">
-          <button
-            type="button"
-            // onClick={() => handleStartTurn(sheet.id)}
-            className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-          >
-            Start Turn
-          </button>
-          <button
-            className="rounded-full border border-[#8b6a3f] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
+          <Button variant="primary">Start Turn</Button>
+          <Button
+            variant="primary"
             onClick={() => saveCharacter(sheet.character.id)}
           >
             Save Character
-          </button>
-          <button
-            type="button"
-            // onClick={() => handleReset(sheet.id)}
-            className="rounded-full border border-[#5c4a33] bg-transparent px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#b7a387]"
-          >
-            Reset
-          </button>
+          </Button>
+          <Button variant="secondary">Reset</Button>
         </div>
       </div>
     </section>

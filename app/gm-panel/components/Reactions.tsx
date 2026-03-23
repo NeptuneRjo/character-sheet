@@ -10,6 +10,7 @@ import {
 import { reactions } from "@/app/data";
 import { useContext, useState } from "react";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
+import { Button } from "@/components";
 
 interface Props {
   sheet: Sheet;
@@ -71,13 +72,7 @@ const Reactions = ({ sheet }: Props) => {
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={() => handleAddReaction()}
-          className="rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-        >
-          Add
-        </button>
+        <Button onClick={() => handleAddReaction()}>Add</Button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
         {characterReactions(sheet.reactions).map((reaction, key) => (
@@ -92,13 +87,12 @@ const Reactions = ({ sheet }: Props) => {
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-              <button
-                type="button"
+              <Button
                 onClick={() => handleRemoveReaction(reaction)}
-                className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
+                variant="secondary"
               >
                 Remove
-              </button>
+              </Button>
             </div>
           </li>
         ))}

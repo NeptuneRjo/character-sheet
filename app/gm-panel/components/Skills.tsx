@@ -10,6 +10,7 @@ import {
 } from "@/lib/types";
 import { useContext, useState } from "react";
 import { skills } from "../../data";
+import { Button } from "@/components";
 
 interface Props {
   sheet: Sheet;
@@ -63,7 +64,7 @@ const Skills = ({ sheet }: Props) => {
         Skill Bonuses
       </p>
       <div className="mt-3 grid gap-3">
-        <div className="grid gap-3 rounded-lg border border-[#5c4a33] bg-[#140f0a] px-3 py-3 sm:grid-cols-[1.4fr_0.8fr_0.8fr_auto]">
+        <div className="grid gap-3 items-end rounded-lg border border-[#5c4a33] bg-[#140f0a] px-3 py-3 sm:grid-cols-[1.4fr_0.8fr_0.8fr_auto]">
           <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Skill
             <select
@@ -97,13 +98,7 @@ const Skills = ({ sheet }: Props) => {
               placeholder="e.g. d6, 2d4"
             />
           </label>
-          <button
-            type="button"
-            onClick={() => handleAddSkill()}
-            className="self-end rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-          >
-            Add
-          </button>
+          <Button onClick={() => handleAddSkill()}>Add</Button>
         </div>
 
         <div className="rounded-lg border border-[#5c4a33] bg-[#140f0a] px-3 py-3">
@@ -141,13 +136,12 @@ const Skills = ({ sheet }: Props) => {
                         Bonus {skill.bonus_dice}
                       </span>
                     )}
-                    <button
-                      type="button"
+                    <Button
+                      variant="secondary"
                       onClick={() => handleRemoveSkill(skill)}
-                      className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
                     >
                       Remove
-                    </button>
+                    </Button>
                   </div>
                 </li>
               ))}

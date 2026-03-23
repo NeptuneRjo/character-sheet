@@ -9,6 +9,7 @@ import {
 import { equipment } from "@/app/data";
 import { useContext, useState } from "react";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
+import { Button } from "@/components";
 
 interface Props {
   sheet: Sheet;
@@ -70,13 +71,7 @@ const Equipment = ({ sheet }: Props) => {
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          onClick={() => handleAddTrait()}
-          className="rounded-full border border-[#8b6a3f] bg-transparent px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-        >
-          Add
-        </button>
+        <Button onClick={() => handleAddTrait()}>Add</Button>
       </div>
       <ul className="mt-2 space-y-2 text-sm text-[#f0e4cf]">
         {characterEquipment(sheet.equipment).map((equipment, key) => (
@@ -91,13 +86,12 @@ const Equipment = ({ sheet }: Props) => {
               </span>
             </div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-              <button
-                type="button"
+              <Button
+                variant="secondary"
                 onClick={() => handleRemoveEquipment(equipment)}
-                className="rounded-full border border-[#8b6a3f] bg-transparent px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
               >
                 Remove
-              </button>
+              </Button>
             </div>
           </li>
         ))}

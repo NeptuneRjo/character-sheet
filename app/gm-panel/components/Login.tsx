@@ -1,4 +1,5 @@
 "use client";
+import { Button } from "@/components";
 import { Dispatch, SetStateAction, useState } from "react";
 
 interface Props {
@@ -22,13 +23,9 @@ const Login = ({ setIsAuthorized }: Props) => {
           className="w-full max-w-xs rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           placeholder="Password"
         />
-        <button
-          type="button"
-          onClick={() => setIsAuthorized(password === "1597Gm!@")}
-          className="rounded-full border border-[#8b6a3f] bg-[#19130d] px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#f0d9a8]"
-        >
+        <Button onClick={() => setIsAuthorized(password === "1597Gm!@")}>
           Unlock
-        </button>
+        </Button>
       </div>
     </section>
   );
