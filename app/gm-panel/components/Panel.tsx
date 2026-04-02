@@ -2,10 +2,11 @@
 
 import { useCharacterModifiers } from "@/lib/hooks/useCharacterModifiers";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
-import { PhysicalBuilds, Sheet, StatLabels } from "@/lib/types";
+import { PhysicalBuilds, Sheet, StatLabels, Stats } from "@/lib/types";
 import { useContext, useEffect } from "react";
 import { Actions, Equipment, Reactions, Skills, Traits, Wounds } from ".";
 import { Button } from "@/components";
+import { getStatLabel } from "@/lib/utils";
 
 interface Props {
   sheet: Sheet;
@@ -128,72 +129,33 @@ const Panel = ({ sheet }: Props) => {
           </label>
         </div>
         <div className="grid gap-3 sm:grid-cols-3">
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            PHYSICALITY
-            <input
-              type="number"
-              value={sheet.stats.phy}
-              onChange={(event) =>
-                setStats(sheet.character.id, "phy", Number(event.target.value))
+          {Object.entries(sheet.stats)
+            // sorts by the key values of stats
+            .sort((a, b) => a[0].localeCompare(b[0]))
+            .map(([key, value], k) => {
+              if (key !== "character_id" && key !== "id") {
+                return (
+                  <label
+                    className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]"
+                    key={k}
+                  >
+                    {getStatLabel(key as keyof Stats)}
+                    <input
+                      type="number"
+                      value={Number(value)}
+                      onChange={(event) =>
+                        setStats(
+                          sheet.character.id,
+                          key as keyof Omit<Stats, "character_id" | "id">,
+                          Number(event.target.value)
+                        )
+                      }
+                      className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+                    />
+                  </label>
+                );
               }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            SENSE
-            <input
-              type="number"
-              value={sheet.stats.sen}
-              onChange={(event) =>
-                setStats(sheet.character.id, "sen", Number(event.target.value))
-              }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            VITALITY
-            <input
-              type="number"
-              value={sheet.stats.vit}
-              onChange={(event) =>
-                setStats(sheet.character.id, "vit", Number(event.target.value))
-              }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            ACUITY
-            <input
-              type="number"
-              value={sheet.stats.acu}
-              onChange={(event) =>
-                setStats(sheet.character.id, "acu", Number(event.target.value))
-              }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            PRESENCE
-            <input
-              type="number"
-              value={sheet.stats.pre}
-              onChange={(event) =>
-                setStats(sheet.character.id, "pre", Number(event.target.value))
-              }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-            WILLPOWER
-            <input
-              type="number"
-              value={sheet.stats.wil}
-              onChange={(event) =>
-                setStats(sheet.character.id, "wil", Number(event.target.value))
-              }
-              className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
-            />
-          </label>
+            })}
         </div>
         <Skills sheet={sheet} />
         <div className="rounded-xl border border-[#5c4a33] bg-[#19130d] px-4 py-3">
