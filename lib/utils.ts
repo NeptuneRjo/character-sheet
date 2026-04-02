@@ -235,3 +235,20 @@ export const getHealedWound = (wound: Wound): Wound | null => {
 
   return woundCopy;
 };
+
+export const getStatLabel = (stat: keyof Stats) => {
+  switch (stat.toLowerCase()) {
+    case "phy":
+      return "Physicality";
+    case "wil":
+      return "Willpower";
+    case "vit":
+      return "Vitality";
+    case "sen":
+      return "Sense";
+    case "acu":
+      return "Acuity";
+    case "pre":
+      return "Presence";
+  }
+};
