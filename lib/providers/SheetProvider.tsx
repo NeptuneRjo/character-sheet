@@ -53,10 +53,9 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const { setCharacter, modifiers } = useCharacterModifiers(sheet);
 
   useEffect(() => {
-    // Save to local host first- debounce to db after x amount of time
     const channel = supabase.channel(`player:${sheet?.character.id}`);
     channel
-      .on("broadcast", { event: "*" }, ({ payload }) => {
+      .on("broadcast", { event: "adventure" }, ({ payload }) => {
         if (!sheet) return;
 
         setSheet(payload);

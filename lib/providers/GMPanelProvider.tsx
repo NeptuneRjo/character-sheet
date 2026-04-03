@@ -127,7 +127,7 @@ export const GMPanelProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem("gm-characters", JSON.stringify(updatedCharacters));
 
     const channel = supabase.channel(`player:${characterId}`);
-    channel.send({ type: "broadcast", event: "shout", payload: sheet });
+    channel.send({ type: "broadcast", event: "adventure", payload: sheet });
   };
 
   const setMoveSpeed = (characterId: string, newBaseSpeed: number) => {
