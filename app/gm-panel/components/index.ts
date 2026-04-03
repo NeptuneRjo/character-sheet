@@ -7,3 +7,5 @@ export { default as Equipment } from "./Equipment";
 export { default as Reactions } from "./Reactions";
 export { default as Traits } from "./Traits";
 export { default as Panel } from "./Panel";
+export { default as CombatView } from "./CombatView";
+export { default as CombatPanel } from "./CombatPanel";
