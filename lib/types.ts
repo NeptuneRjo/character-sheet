@@ -64,6 +64,8 @@ export type Sheet = {
   reactions: CharacterReactionSchema[];
 };
 
+export type CombatSheet = Sheet & { turnOrder: number };
+
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;
 export type InsWound = typeof schema.wounds.$inferInsert;
