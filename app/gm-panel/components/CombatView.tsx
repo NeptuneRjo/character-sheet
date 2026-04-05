@@ -17,14 +17,14 @@ const CombatView = ({ sheets }: Props) => {
   const [turnOrder, setTurnOrder] = useState<number>(0);
 
   useEffect(() => {
+    // creates our list of players in combat.
     const combatants: CombatSheet[] = sheets.map((sheet) => {
       return { ...sheet, turnOrder: 0 };
     });
     setPlayerOrder(combatants);
   }, [sheets]);
 
-  const updateTurnOrder = (characterId: string, newTurnOrder: number) => {
-    // creates our list of players in combat.
+  const updatePlayerTurnOrder = (characterId: string, newTurnOrder: number) => {
     const updatedCombatOrder = playerOrder.map((sheet) => {
       if (sheet.character.id === characterId) {
         return { ...sheet, turnOrder: newTurnOrder };
@@ -32,6 +32,16 @@ const CombatView = ({ sheets }: Props) => {
       return sheet;
     });
     setPlayerOrder(updatedCombatOrder);
+  };
+
+  const updateCombatantTurnOrder = (name: string, newTurnOrder: number) => {
+    const updatedCombatOrder = combatantOrder.map((combatant) => {
+      if (combatant.name === name) {
+        return { ...combatant, turnOrder: newTurnOrder };
+      }
+      return combatant;
+    });
+    setCombatantOrder(updatedCombatOrder);
   };
 
   const addCombatant = () => {
@@ -47,7 +57,7 @@ const CombatView = ({ sheets }: Props) => {
       // so we can differentiate between like-named combatants without generating some form of ID.
       setCombatantOrder([
         ...combatantOrder,
-        { name: `${combatantName} ${count}`, turnOrder },
+        { name: `${combatantName} ${count + 1}`, turnOrder },
       ]);
     } else {
       setCombatantOrder([
@@ -57,6 +67,13 @@ const CombatView = ({ sheets }: Props) => {
     }
     setCombatantName("");
     setTurnOrder(0);
+  };
+
+  const removeCombatant = (name: string) => {
+    const updatedCombatantList = combatantOrder.filter(
+      (combatant) => combatant.name !== name
+    );
+    setCombatantOrder(updatedCombatantList);
   };
 
   return (
@@ -100,7 +117,7 @@ const CombatView = ({ sheets }: Props) => {
               <PlayerCombatPanel
                 key={key}
                 sheet={value}
-                updateTurnOrder={updateTurnOrder}
+                updatePlayerTurnOrder={updatePlayerTurnOrder}
               />
             );
           } else {
@@ -108,7 +125,8 @@ const CombatView = ({ sheets }: Props) => {
               <CombatantCombatPanel
                 key={key}
                 combatant={value}
-                updateTurnOrder={updateTurnOrder}
+                removeCombatant={removeCombatant}
+                updateCombatantTurnOrder={updateCombatantTurnOrder}
               />
             );
           }

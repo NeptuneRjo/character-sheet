@@ -8,10 +8,10 @@ import { useContext, useEffect, useState } from "react";
 
 interface Props {
   sheet: CombatSheet;
-  updateTurnOrder: (characterId: string, newTurnOrder: number) => void;
+  updatePlayerTurnOrder: (characterId: string, newTurnOrder: number) => void;
 }
 
-const CombatPanel = ({ sheet, updateTurnOrder }: Props) => {
+const CombatPanel = ({ sheet, updatePlayerTurnOrder }: Props) => {
   const { setters } = useContext(GMPanelContext);
   const { modifiers, setCharacter } = useCharacterModifiers(sheet);
 
@@ -44,7 +44,10 @@ const CombatPanel = ({ sheet, updateTurnOrder }: Props) => {
             type="number"
             value={sheet.turnOrder}
             onChange={(event) =>
-              updateTurnOrder(sheet.character.id, Number(event.target.value))
+              updatePlayerTurnOrder(
+                sheet.character.id,
+                Number(event.target.value)
+              )
             }
             className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           />
