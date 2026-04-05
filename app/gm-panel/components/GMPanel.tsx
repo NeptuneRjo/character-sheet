@@ -71,7 +71,7 @@ const GMPanel = () => {
           </Button>
         </div>
         {isCombatView ? (
-          <CombatView characters={characters} />
+          <CombatView sheets={characters} />
         ) : (
           <>
             <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6 grid grid-cols-2">

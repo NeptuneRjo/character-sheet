@@ -65,6 +65,13 @@ export type Sheet = {
 };
 
 export type CombatSheet = Sheet & { turnOrder: number };
+/**
+ * Defines a non-player added to the combat.
+ */
+export type Combatant = {
+  turnOrder: number;
+  name: string;
+};
 
 // Use when typing any object that's not directly from the database.
 export type InsCharacter = typeof schema.characters.$inferInsert;

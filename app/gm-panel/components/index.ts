@@ -8,4 +8,5 @@ export { default as Reactions } from "./Reactions";
 export { default as Traits } from "./Traits";
 export { default as Panel } from "./Panel";
 export { default as CombatView } from "./CombatView";
-export { default as CombatPanel } from "./CombatPanel";
+export { default as PlayerCombatPanel } from "./PlayerCombatPanel";
+export { default as CombatantCombatPanel } from "./CombatantCombatPanel";

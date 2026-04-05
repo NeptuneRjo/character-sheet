@@ -2,7 +2,7 @@
 
 import { useCharacterModifiers } from "@/lib/hooks/useCharacterModifiers";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
-import { CombatSheet, Stats } from "@/lib/types";
+import { Combatant, CombatSheet, Stats } from "@/lib/types";
 import { getStatLabel } from "@/lib/utils";
 import { useContext, useEffect, useState } from "react";
 
