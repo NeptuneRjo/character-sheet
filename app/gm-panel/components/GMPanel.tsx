@@ -4,10 +4,14 @@ import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 import { useContext, useEffect, useState } from "react";
 import { CombatView, Login, Panel } from ".";
 import { Button } from "@/components";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const GMPanel = () => {
   const { characters, isLoading, getCharacters, createCharacter } =
     useContext(GMPanelContext);
+
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(true);
   const [characterName, setCharacterName] = useState<string>("");
@@ -21,6 +25,26 @@ const GMPanel = () => {
       }
     })();
   }, [isAuthorized]);
+
+  useEffect(() => {
+    const hasView = searchParams.get("view");
+    if (hasView) {
+      const view = searchParams.get("view");
+      if (view === "combat") {
+        setIsCombatView(true);
+      }
+    } else {
+      setIsCombatView(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isCombatView) {
+      router.push("/gm-panel?view=combat");
+    } else {
+      router.push("/gm-panel?view=adventure");
+    }
+  }, [isCombatView]);
 
   const handleCreateCharacter = () => {
     createCharacter(characterName.length <= 0 ? undefined : characterName);
