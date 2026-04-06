@@ -17,12 +17,47 @@ const CombatView = ({ sheets }: Props) => {
   const [turnOrder, setTurnOrder] = useState<number>(0);
 
   useEffect(() => {
-    // creates our list of players in combat.
-    const combatants: CombatSheet[] = sheets.map((sheet) => {
-      return { ...sheet, turnOrder: 0 };
-    });
-    setPlayerOrder(combatants);
+    const storedPlayers = localStorage.getItem("player-combat-order");
+    const storedCombatants = localStorage.getItem("combatant-combat-order");
+
+    if (storedPlayers) {
+      (async () => {
+        const players = await JSON.parse(storedPlayers);
+        setPlayerOrder(players);
+      })();
+    }
+
+    if (storedCombatants) {
+      (async () => {
+        const combatants = await JSON.parse(storedCombatants);
+        setCombatantOrder(combatants);
+      })();
+    }
+
+    if (playerOrder.length <= 0) {
+      // creates our list of players in combat.
+      const combatants: CombatSheet[] = sheets.map((sheet) => {
+        return { ...sheet, turnOrder: 0 };
+      });
+      setPlayerOrder(combatants);
+    }
   }, [sheets]);
+
+  useEffect(() => {
+    if (playerOrder.length > 0) {
+      localStorage.setItem("player-combat-order", JSON.stringify(playerOrder));
+    } else {
+      localStorage.removeItem("player-combat-order");
+    }
+    if (combatantOrder.length > 0) {
+      localStorage.setItem(
+        "combatant-combat-order",
+        JSON.stringify(combatantOrder)
+      );
+    } else {
+      localStorage.removeItem("combatant-combat-order");
+    }
+  }, [playerOrder, combatantOrder]);
 
   const updatePlayerTurnOrder = (characterId: string, newTurnOrder: number) => {
     const updatedCombatOrder = playerOrder.map((sheet) => {
