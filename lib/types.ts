@@ -207,6 +207,23 @@ export type SheetContextType = {
   modifiers: CharacterModifiers;
 };
 
+export type CombatContextType = {
+  currentTurn: number;
+  currentRound: number;
+  combatStart: boolean;
+  combatOrder: (Combatant | CombatSheet)[];
+  addCombatant: (name: string, turnOrder: number) => void;
+  removeCombatant: (name: string) => void;
+  updateCombatantOrder: (name: string, newTurnOrder: number) => void;
+  updatePlayerOrder: (id: string, newTurnOrder: number) => void;
+  handlers: {
+    handleCombatStart: (playerCombatOrder: CombatSheet[]) => void;
+  };
+  setters: {
+    setPlayerOrder: (sheets: Sheet[]) => void;
+  };
+};
+
 export type GMPanelContextType = {
   characters: Sheet[];
   isLoading: boolean;
