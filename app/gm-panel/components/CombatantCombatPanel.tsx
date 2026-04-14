@@ -5,14 +5,18 @@ import { Combatant } from "@/lib/types";
 
 interface Props {
   combatant: Combatant;
+  combatStart: boolean;
   updateCombatantTurnOrder: (name: string, newTurnOrder: number) => void;
   removeCombatant: (name: string) => void;
+  currentTurn: number;
 }
 
 const CombatPanel = ({
   combatant,
   updateCombatantTurnOrder,
   removeCombatant,
+  combatStart,
+  currentTurn,
 }: Props) => {
   return (
     <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6">

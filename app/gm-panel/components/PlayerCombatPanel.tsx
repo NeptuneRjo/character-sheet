@@ -8,10 +8,12 @@ import { useContext, useEffect, useState } from "react";
 
 interface Props {
   sheet: CombatSheet;
+  combatStart: boolean;
   updatePlayerTurnOrder: (characterId: string, newTurnOrder: number) => void;
+  currentTurn: number;
 }
 
-const CombatPanel = ({ sheet, updatePlayerTurnOrder }: Props) => {
+const CombatPanel = ({ sheet, updatePlayerTurnOrder, combatStart }: Props) => {
   const { setters } = useContext(GMPanelContext);
   const { modifiers, setCharacter } = useCharacterModifiers(sheet);
 
