@@ -2,113 +2,38 @@
 
 import { Button } from "@/components";
 import { Combatant, CombatSheet, Sheet } from "@/lib/types";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PlayerCombatPanel, CombatantCombatPanel } from "./index";
+import { CombatContext } from "@/lib/providers/CombatProvider";
 
 interface Props {
   sheets: Sheet[];
 }
 
 const CombatView = ({ sheets }: Props) => {
-  const [playerOrder, setPlayerOrder] = useState<CombatSheet[]>([]);
-  const [combatantOrder, setCombatantOrder] = useState<Combatant[]>([]);
+  const {
+    currentTurn,
+    combatStart,
+    handlers,
+    addCombatant,
+    combatOrder,
+    setters,
+    removeCombatant,
+    updateCombatantOrder,
+    updatePlayerOrder,
+  } = useContext(CombatContext);
 
   const [combatantName, setCombatantName] = useState<string>("");
   const [turnOrder, setTurnOrder] = useState<number>(0);
 
   useEffect(() => {
-    const storedPlayers = localStorage.getItem("player-combat-order");
-    const storedCombatants = localStorage.getItem("combatant-combat-order");
-
-    if (storedPlayers) {
-      (async () => {
-        const players = await JSON.parse(storedPlayers);
-        setPlayerOrder(players);
-      })();
-    }
-
-    if (storedCombatants) {
-      (async () => {
-        const combatants = await JSON.parse(storedCombatants);
-        setCombatantOrder(combatants);
-      })();
-    }
-
-    if (playerOrder.length <= 0) {
-      // creates our list of players in combat.
-      const combatants: CombatSheet[] = sheets.map((sheet) => {
-        return { ...sheet, turnOrder: 0 };
-      });
-      setPlayerOrder(combatants);
-    }
+    setters.setPlayerOrder(sheets);
   }, [sheets]);
 
-  useEffect(() => {
-    if (playerOrder.length > 0) {
-      localStorage.setItem("player-combat-order", JSON.stringify(playerOrder));
-    } else {
-      localStorage.removeItem("player-combat-order");
-    }
-    if (combatantOrder.length > 0) {
-      localStorage.setItem(
-        "combatant-combat-order",
-        JSON.stringify(combatantOrder)
-      );
-    } else {
-      localStorage.removeItem("combatant-combat-order");
-    }
-  }, [playerOrder, combatantOrder]);
-
-  const updatePlayerTurnOrder = (characterId: string, newTurnOrder: number) => {
-    const updatedCombatOrder = playerOrder.map((sheet) => {
-      if (sheet.character.id === characterId) {
-        return { ...sheet, turnOrder: newTurnOrder };
-      }
-      return sheet;
-    });
-    setPlayerOrder(updatedCombatOrder);
-  };
-
-  const updateCombatantTurnOrder = (name: string, newTurnOrder: number) => {
-    const updatedCombatOrder = combatantOrder.map((combatant) => {
-      if (combatant.name === name) {
-        return { ...combatant, turnOrder: newTurnOrder };
-      }
-      return combatant;
-    });
-    setCombatantOrder(updatedCombatOrder);
-  };
-
-  const addCombatant = () => {
-    if (combatantName === "") {
-      return;
-    }
-
-    const count = combatantOrder.filter(
-      (combatant) => combatant.name === combatantName
-    ).length;
-
-    if (count > 0) {
-      // so we can differentiate between like-named combatants without generating some form of ID.
-      setCombatantOrder([
-        ...combatantOrder,
-        { name: `${combatantName} ${count + 1}`, turnOrder },
-      ]);
-    } else {
-      setCombatantOrder([
-        ...combatantOrder,
-        { name: combatantName, turnOrder },
-      ]);
-    }
+  const handleAddCombatant = () => {
+    addCombatant(combatantName, turnOrder);
     setCombatantName("");
     setTurnOrder(0);
-  };
-
-  const removeCombatant = (name: string) => {
-    const updatedCombatantList = combatantOrder.filter(
-      (combatant) => combatant.name !== name
-    );
-    setCombatantOrder(updatedCombatantList);
   };
 
   return (
@@ -135,37 +60,39 @@ const CombatView = ({ sheets }: Props) => {
               className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
             />
           </label>
-          <Button onClick={() => addCombatant()}>Add Entry</Button>
+          <Button onClick={() => handleAddCombatant()}>Add Entry</Button>
         </div>
         <div className="flex justify-center flex-col items-end gap-4 p-4">
           <p className="text-xs uppercase tracking-[0.2em] text-[#b7a387]">
             Start Combat
           </p>
-          <Button onClick={() => console.log()}>Start</Button>
+          <Button onClick={() => console.log("start")}>Start</Button>
         </div>
       </section>
-      {[...playerOrder, ...combatantOrder]
-        ?.sort((a, b) => b.turnOrder - a.turnOrder)
-        .map((value, key) => {
-          if ("character" in value) {
-            return (
-              <PlayerCombatPanel
-                key={key}
-                sheet={value}
-                updatePlayerTurnOrder={updatePlayerTurnOrder}
-              />
-            );
-          } else {
-            return (
-              <CombatantCombatPanel
-                key={key}
-                combatant={value}
-                removeCombatant={removeCombatant}
-                updateCombatantTurnOrder={updateCombatantTurnOrder}
-              />
-            );
-          }
-        })}
+      {combatOrder.map((value, key) => {
+        if ("character" in value) {
+          return (
+            <PlayerCombatPanel
+              key={key}
+              combatStart={combatStart}
+              sheet={value}
+              currentTurn={currentTurn}
+              updatePlayerTurnOrder={updatePlayerOrder}
+            />
+          );
+        } else {
+          return (
+            <CombatantCombatPanel
+              key={key}
+              combatStart={combatStart}
+              combatant={value}
+              currentTurn={currentTurn}
+              removeCombatant={removeCombatant}
+              updateCombatantTurnOrder={updateCombatantOrder}
+            />
+          );
+        }
+      })}
     </div>
   );
 };
