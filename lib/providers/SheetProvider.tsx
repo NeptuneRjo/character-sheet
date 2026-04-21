@@ -50,15 +50,33 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
   const [sheet, setSheet] = useState<Sheet | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  const [combatStart, setCombatStart] = useState<boolean>(false);
+  const [isTurn, setIsTurn] = useState<boolean>(false);
+
   const { setCharacter, modifiers } = useCharacterModifiers(sheet);
 
   useEffect(() => {
     const channel = supabase.channel(`player:${sheet?.character.id}`);
     channel
-      .on("broadcast", { event: "adventure" }, ({ payload }) => {
+      .on("broadcast", { event: "*" }, ({ payload, event }) => {
         if (!sheet) return;
 
-        setSheet(payload);
+        switch (event) {
+          case "adventure":
+            setSheet(payload);
+            break;
+          case "combat-start":
+            setCombatStart(true);
+            break;
+          case "combat-turn":
+            // Payload will be boolean
+            setIsTurn(payload);
+            break;
+          case "combat-end":
+            setCombatStart(false);
+            setIsTurn(false);
+            break;
+        }
       })
       .subscribe();
 
