@@ -124,7 +124,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   const updatePlayerOrder = (id: string, newTurnOrder: number) => {
     const updatedCombatOrder = playerCombatOrder.map((sheet) => {
       if (sheet.character.id === id) {
-        return { ...sheet, turnOrder: newTurnOrder };
+        return { ...sheet, initiative: newTurnOrder };
       }
       return sheet;
     });
@@ -153,7 +153,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   const updateCombatantOrder = (name: string, newTurnOrder: number) => {
     const updatedCombatOrder = combatantCombatOrder.map((combatant) => {
       if (combatant.name === name) {
-        return { ...combatant, turnOrder: newTurnOrder };
+        return { ...combatant, initiative: newTurnOrder };
       }
       return combatant;
     });
