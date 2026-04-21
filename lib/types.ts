@@ -64,12 +64,12 @@ export type Sheet = {
   reactions: CharacterReactionSchema[];
 };
 
-export type CombatSheet = Sheet & { turnOrder: number };
+export type CombatSheet = Sheet & { initiative: number };
 /**
  * Defines a non-player added to the combat.
  */
 export type Combatant = {
-  turnOrder: number;
+  initiative: number;
   name: string;
 };
 
@@ -217,7 +217,10 @@ export type CombatContextType = {
   updateCombatantOrder: (name: string, newTurnOrder: number) => void;
   updatePlayerOrder: (id: string, newTurnOrder: number) => void;
   handlers: {
-    handleCombatStart: (playerCombatOrder: CombatSheet[]) => void;
+    startCombat: () => void;
+    endCombat: (sheets: Sheet[]) => void;
+    nextTurn: () => void;
+    nextRound: () => void;
   };
   setters: {
     setPlayerOrder: (sheets: Sheet[]) => void;
