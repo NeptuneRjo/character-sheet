@@ -217,8 +217,6 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     setCurrentTurn(turn);
     setCurrentRound(round);
 
-    console.log(combatOrder[6]);
-
     if ("character" in combatant) {
       alertPlayer(combatant, true);
     }

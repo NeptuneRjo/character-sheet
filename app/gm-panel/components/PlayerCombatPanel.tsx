@@ -8,12 +8,11 @@ import { useContext, useEffect, useState } from "react";
 
 interface Props {
   sheet: CombatSheet;
-  combatStart: boolean;
   updatePlayerTurnOrder: (characterId: string, newTurnOrder: number) => void;
-  currentTurn: number;
+  isTurn: boolean;
 }
 
-const CombatPanel = ({ sheet, updatePlayerTurnOrder, combatStart }: Props) => {
+const CombatPanel = ({ sheet, updatePlayerTurnOrder, isTurn }: Props) => {
   const { setters } = useContext(GMPanelContext);
   const { modifiers, setCharacter } = useCharacterModifiers(sheet);
 
@@ -27,7 +26,9 @@ const CombatPanel = ({ sheet, updatePlayerTurnOrder, combatStart }: Props) => {
     modifiers;
 
   return (
-    <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6">
+    <section
+      className={`rounded-2xl border ${isTurn ? "border-[#ba9a71]" : "border-[#5c4a33]"} bg-[#140f0a] p-6`}
+    >
       <div className="mb-4 flex items-center justify-between gap-6 py-2">
         <h2 className="text-xl font-semibold text-[#f0e4cf] flex-1">
           {sheet.character.name}
@@ -41,10 +42,10 @@ const CombatPanel = ({ sheet, updatePlayerTurnOrder, combatStart }: Props) => {
       </div>
       <div className="grid grid-cols-5 gap-3">
         <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-          Turn Order
+          Initiative
           <input
             type="number"
-            value={sheet.turnOrder}
+            value={sheet.initiative}
             onChange={(event) =>
               updatePlayerTurnOrder(
                 sheet.character.id,

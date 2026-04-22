@@ -99,7 +99,7 @@ const CombatView = ({ sheets }: Props) => {
             <PlayerCombatPanel
               key={key}
               sheet={value}
-              currentTurn={currentTurn}
+              isTurn={key === currentTurn}
               updatePlayerTurnOrder={updatePlayerOrder}
             />
           );
@@ -108,7 +108,7 @@ const CombatView = ({ sheets }: Props) => {
             <CombatantCombatPanel
               key={key}
               combatant={value}
-              currentTurn={currentTurn}
+              isTurn={key === currentTurn}
               removeCombatant={removeCombatant}
               updateCombatantTurnOrder={updateCombatantOrder}
             />
