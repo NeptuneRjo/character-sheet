@@ -8,6 +8,8 @@ interface Props {
   updateCombatantTurnOrder: (name: string, newTurnOrder: number) => void;
   removeCombatant: (name: string) => void;
   isTurn: boolean;
+  inCombat: boolean;
+  updateCombatantStatus: (name: string, incapacitated: boolean) => void;
 }
 
 const CombatPanel = ({
@@ -15,6 +17,8 @@ const CombatPanel = ({
   updateCombatantTurnOrder,
   removeCombatant,
   isTurn,
+  inCombat,
+  updateCombatantStatus,
 }: Props) => {
   return (
     <section
@@ -24,21 +28,34 @@ const CombatPanel = ({
         <h2 className="text-xl font-semibold text-[#f0e4cf] flex-1">
           {combatant.name}
         </h2>
-        <Button onClick={() => removeCombatant(combatant.name)}>
-          Remove Entry
-        </Button>
+        {!inCombat && (
+          <Button onClick={() => removeCombatant(combatant.name)}>
+            Remove Entry
+          </Button>
+        )}
       </div>
-      <div className="grid grid-cols-5 gap-3">
+      <div className="grid grid-cols-5 gap-6">
         <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
           Initiative
           <input
             type="number"
-            value={combatant.initiative}
+            value={combatant.initiative ?? 0}
             onChange={(event) =>
               updateCombatantTurnOrder(
                 combatant.name,
                 Number(event.target.value)
               )
+            }
+            className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
+          />
+        </label>
+        <label className="flex flex-col gap-5 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
+          Incapacitated
+          <input
+            type="checkbox"
+            checked={combatant.incapacitated}
+            onChange={() =>
+              updateCombatantStatus(combatant.name, !combatant.incapacitated)
             }
             className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           />

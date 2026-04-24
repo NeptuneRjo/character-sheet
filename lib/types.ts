@@ -71,6 +71,7 @@ export type CombatSheet = Sheet & { initiative: number };
 export type Combatant = {
   initiative: number;
   name: string;
+  incapacitated: boolean;
 };
 
 // Use when typing any object that's not directly from the database.
@@ -210,12 +211,13 @@ export type SheetContextType = {
 export type CombatContextType = {
   currentTurn: number;
   currentRound: number;
-  combatStart: boolean;
+  inCombat: boolean;
   combatOrder: (Combatant | CombatSheet)[];
   addCombatant: (name: string, turnOrder: number) => void;
   removeCombatant: (name: string) => void;
   updateCombatantOrder: (name: string, newTurnOrder: number) => void;
   updatePlayerOrder: (id: string, newTurnOrder: number) => void;
+  updateCombatantStatus: (name: string, incapacitated: boolean) => void;
   handlers: {
     startCombat: () => void;
     endCombat: (sheets: Sheet[]) => void;

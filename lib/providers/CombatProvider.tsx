@@ -10,12 +10,13 @@ const initializationError = (func: string) => {
 export const CombatContext = createContext<CombatContextType>({
   currentTurn: 0,
   currentRound: 1,
-  combatStart: false,
+  inCombat: false,
   combatOrder: [],
   addCombatant: () => initializationError("addCombatant"),
   removeCombatant: () => initializationError("removeCombatant"),
   updatePlayerOrder: () => initializationError("updatePlayerOrder"),
   updateCombatantOrder: () => initializationError("updateCombatantOrder"),
+  updateCombatantStatus: () => initializationError("updateCombatantStatus"),
   handlers: {
     startCombat: () => initializationError("startCombat"),
     endCombat: () => initializationError("endCombat"),
@@ -28,7 +29,7 @@ export const CombatContext = createContext<CombatContextType>({
 });
 
 export const CombatProvider = ({ children }: { children: ReactNode }) => {
-  const [combatStart, setCombatStart] = useState<boolean>(false);
+  const [inCombat, setInCombat] = useState<boolean>(false);
 
   // Tells us who is currently up in initiative.
   const [currentTurn, setCurrentTurn] = useState<number>(0);
@@ -71,7 +72,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
       if (stored) {
         const data = await JSON.parse(stored);
 
-        setCombatStart(data.combatStart);
+        setInCombat(data.combatStart);
         setCurrentRound(data.currentRound);
         setCurrentTurn(data.currentTurn);
       }
@@ -79,7 +80,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if (combatStart && playerCombatOrder.length > 0) {
+    if (inCombat && playerCombatOrder.length > 0) {
       playerCombatOrder.forEach((sheet) => {
         const channel = supabase.channel(`player:${sheet.character.id}`);
         channel.send({
@@ -89,7 +90,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
         });
       });
     }
-  }, [combatStart]);
+  }, [inCombat]);
 
   useEffect(() => {
     // When the orders are updated, update the stored orders (delete if empty).
@@ -146,6 +147,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
         // so we can differentiate between like-named combatants without generating some form of ID.
         name: count > 0 ? `${name} ${count + 1}` : name,
         initiative,
+        incapacitated: false,
       },
     ]);
   };
@@ -160,6 +162,16 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     setCombatantCombatOrder(updatedCombatOrder);
   };
 
+  const updateCombatantStatus = (name: string, incapacitated: boolean) => {
+    const updatedCombatOrder = combatantCombatOrder.map((combatant) => {
+      if (combatant.name === name) {
+        return { ...combatant, incapacitated };
+      }
+      return combatant;
+    });
+    setCombatantCombatOrder(updatedCombatOrder);
+  };
+
   const removeCombatant = (name: string) => {
     const updatedCombatantList = combatantCombatOrder.filter(
       (combatant) => combatant.name !== name
@@ -168,7 +180,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const startCombat = () => {
-    setCombatStart(true);
+    setInCombat(true);
     setCurrentTurn(0);
 
     localStorage.setItem(
@@ -186,10 +198,14 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const endCombat = (sheets: Sheet[]) => {
-    setCombatStart(false);
+    setInCombat(false);
     setCurrentTurn(0);
     setCurrentRound(1);
-    setCombatantCombatOrder([]);
+
+    const updatedCombatantOrder = combatantCombatOrder.filter(
+      (combatant) => !combatant.incapacitated
+    );
+    setCombatantCombatOrder(updatedCombatantOrder);
 
     localStorage.removeItem("in-combat");
 
@@ -249,7 +265,7 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     channel.send({
       type: "broadcast",
       event: "combat-turn",
-      payload: isTurn,
+      payload: { isTurn },
     });
   };
 
@@ -265,12 +281,13 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     },
     currentRound,
     currentTurn,
-    combatStart,
+    inCombat,
     combatOrder,
     addCombatant,
     removeCombatant,
     updatePlayerOrder,
     updateCombatantOrder,
+    updateCombatantStatus,
   };
 
   return (

@@ -13,7 +13,7 @@ interface Props {
 const CombatView = ({ sheets }: Props) => {
   const {
     currentTurn,
-    combatStart,
+    inCombat,
     handlers,
     addCombatant,
     combatOrder,
@@ -22,6 +22,7 @@ const CombatView = ({ sheets }: Props) => {
     updateCombatantOrder,
     updatePlayerOrder,
     currentRound,
+    updateCombatantStatus,
   } = useContext(CombatContext);
 
   const [combatantName, setCombatantName] = useState<string>("");
@@ -39,7 +40,7 @@ const CombatView = ({ sheets }: Props) => {
 
   return (
     <div className="grid gap-6">
-      {combatStart ? (
+      {inCombat ? (
         <section className="rounded-2xl border border-[#5c4a33] bg-[#140f0a] p-6 flex flex-row justify-between">
           <div className="flex flex-row gap-4">
             <Button onClick={() => handlers.nextTurn()}>Next Turn</Button>
@@ -99,8 +100,9 @@ const CombatView = ({ sheets }: Props) => {
             <PlayerCombatPanel
               key={key}
               sheet={value}
-              isTurn={key === currentTurn}
+              isTurn={key === currentTurn && inCombat}
               updatePlayerTurnOrder={updatePlayerOrder}
+              inCombat={inCombat}
             />
           );
         } else {
@@ -108,9 +110,11 @@ const CombatView = ({ sheets }: Props) => {
             <CombatantCombatPanel
               key={key}
               combatant={value}
-              isTurn={key === currentTurn}
+              isTurn={key === currentTurn && inCombat}
               removeCombatant={removeCombatant}
               updateCombatantTurnOrder={updateCombatantOrder}
+              updateCombatantStatus={updateCombatantStatus}
+              inCombat={inCombat}
             />
           );
         }
