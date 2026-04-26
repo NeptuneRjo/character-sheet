@@ -95,6 +95,21 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
+  useEffect(() => {
+    if (inCombat && playerCombatOrder.length > 0) {
+      playerCombatOrder.forEach(({ id }) => {
+        const sheet = characters.find(({ character }) => character.id === id);
+        if (!sheet) return;
+        const channel = supabase.channel(`player:${sheet.character.id}`);
+        channel.send({
+          type: "broadcast",
+          event: "combat-start",
+          payload: { isTurn: true },
+        });
+      });
+    }
+  }, [inCombat]);
+
   const updatePlayerOrder = (id: string, newTurnOrder: number) => {
     const updatedCombatOrder = playerCombatOrder.map((sheet) => {
       if (sheet.id === id) {
