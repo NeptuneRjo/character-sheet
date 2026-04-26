@@ -5,10 +5,10 @@ import { CombatProvider } from "./CombatProvider";
 
 export default function Providers({ children }: { children: ReactNode }) {
   return (
-    <CombatProvider>
-      <GMPanelProvider>
+    <GMPanelProvider>
+      <CombatProvider>
         <SheetProvider>{children}</SheetProvider>
-      </GMPanelProvider>
-    </CombatProvider>
+      </CombatProvider>
+    </GMPanelProvider>
   );
 }
