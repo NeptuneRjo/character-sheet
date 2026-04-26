@@ -5,6 +5,7 @@ import { Combatant, CombatSheet, Sheet } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 import { PlayerCombatPanel, CombatantCombatPanel } from "./index";
 import { CombatContext } from "@/lib/providers/CombatProvider";
+import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
 
 interface Props {
   sheets: Sheet[];
@@ -17,7 +18,6 @@ const CombatView = ({ sheets }: Props) => {
     handlers,
     addCombatant,
     combatOrder,
-    setters,
     removeCombatant,
     updateCombatantOrder,
     updatePlayerOrder,
@@ -27,10 +27,6 @@ const CombatView = ({ sheets }: Props) => {
 
   const [combatantName, setCombatantName] = useState<string>("");
   const [initiative, setInitiative] = useState<number>(0);
-
-  useEffect(() => {
-    setters.setPlayerOrder(sheets);
-  }, [sheets]);
 
   const handleAddCombatant = () => {
     addCombatant(combatantName, initiative);
@@ -95,14 +91,15 @@ const CombatView = ({ sheets }: Props) => {
         </section>
       )}
       {combatOrder.map((value, key) => {
-        if ("character" in value) {
+        if ("id" in value) {
           return (
             <PlayerCombatPanel
               key={key}
-              sheet={value}
+              sheet={sheets.find(({ character }) => character.id === value.id)}
               isTurn={key === currentTurn && inCombat}
               updatePlayerTurnOrder={updatePlayerOrder}
               inCombat={inCombat}
+              initiative={value.initiative}
             />
           );
         } else {

@@ -64,7 +64,7 @@ export type Sheet = {
   reactions: CharacterReactionSchema[];
 };
 
-export type CombatSheet = Sheet & { initiative: number };
+export type CombatSheet = { id: string; initiative: number };
 /**
  * Defines a non-player added to the combat.
  */
@@ -223,9 +223,6 @@ export type CombatContextType = {
     endCombat: (sheets: Sheet[]) => void;
     nextTurn: () => void;
     nextRound: () => void;
-  };
-  setters: {
-    setPlayerOrder: (sheets: Sheet[]) => void;
   };
 };
 

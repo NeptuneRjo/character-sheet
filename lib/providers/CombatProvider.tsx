@@ -1,7 +1,15 @@
 "use client";
-import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Combatant, CombatContextType, CombatSheet, Sheet } from "../types";
 import { supabase } from "../supabaseClient";
+import { GMPanelContext } from "./GMPanelProvider";
 
 const initializationError = (func: string) => {
   throw new Error(`${func} was called before CombatContext was initialized`);
@@ -23,12 +31,11 @@ export const CombatContext = createContext<CombatContextType>({
     nextTurn: () => initializationError("nextTurn"),
     nextRound: () => initializationError("nextRound"),
   },
-  setters: {
-    setPlayerOrder: () => initializationError("setPlayerOrder"),
-  },
 });
 
 export const CombatProvider = ({ children }: { children: ReactNode }) => {
+  const { characters } = useContext(GMPanelContext);
+
   const [inCombat, setInCombat] = useState<boolean>(false);
 
   // Tells us who is currently up in initiative.
@@ -47,16 +54,25 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
   }, [playerCombatOrder, combatantCombatOrder]);
 
   useEffect(() => {
-    // If the orders are empty we populate them with any data stored in local storage.
-    (async () => {
-      if (playerCombatOrder.length <= 0) {
-        const stored = localStorage.getItem("player-order");
-        if (stored) {
-          const data = await JSON.parse(stored);
-          setPlayerCombatOrder(data);
-        }
-      }
-    })();
+    const saved = localStorage.getItem("player-order");
+
+    if (saved && playerCombatOrder.length <= 0) {
+      (async () => {
+        const data = JSON.parse(saved);
+        setPlayerCombatOrder(data);
+      })();
+      return;
+    }
+    // We store a list of references instead of the sheets to reduce the number of places that the sheets need to be updated.
+    const order: CombatSheet[] = characters.map((sheet) => {
+      return { id: sheet.character.id, initiative: 0 };
+    });
+
+    localStorage.setItem("player-order", JSON.stringify(order));
+    setPlayerCombatOrder(order);
+  }, [characters]);
+
+  useEffect(() => {
     (async () => {
       if (combatantCombatOrder.length <= 0) {
         const stored = localStorage.getItem("combatant-order");
@@ -79,52 +95,9 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     })();
   }, []);
 
-  useEffect(() => {
-    if (inCombat && playerCombatOrder.length > 0) {
-      playerCombatOrder.forEach((sheet) => {
-        const channel = supabase.channel(`player:${sheet.character.id}`);
-        channel.send({
-          type: "broadcast",
-          event: "combat-start",
-          payload: sheet,
-        });
-      });
-    }
-  }, [inCombat]);
-
-  useEffect(() => {
-    // When the orders are updated, update the stored orders (delete if empty).
-    if (playerCombatOrder.length > 0) {
-      localStorage.setItem("player-order", JSON.stringify(playerCombatOrder));
-    } else {
-      localStorage.removeItem("player-order");
-    }
-    if (combatantCombatOrder.length > 0) {
-      localStorage.setItem(
-        "combatant-order",
-        JSON.stringify(combatantCombatOrder)
-      );
-    } else {
-      localStorage.removeItem("combatant-order");
-    }
-  }, [playerCombatOrder, combatantCombatOrder]);
-
-  const setPlayerOrder = (sheets: Sheet[]) => {
-    if (
-      playerCombatOrder.length <= 0 ||
-      playerCombatOrder.length < sheets.length
-    ) {
-      // creates our list of players in combat.
-      const combatants: CombatSheet[] = sheets.map((sheet) => {
-        return { ...sheet, initiative: 0 };
-      });
-      setPlayerCombatOrder(combatants);
-    }
-  };
-
   const updatePlayerOrder = (id: string, newTurnOrder: number) => {
     const updatedCombatOrder = playerCombatOrder.map((sheet) => {
-      if (sheet.character.id === id) {
+      if (sheet.id === id) {
         return { ...sheet, initiative: newTurnOrder };
       }
       return sheet;
@@ -192,8 +165,8 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
       })
     );
 
-    if ("character" in combatOrder[currentTurn]) {
-      alertPlayer(combatOrder[currentTurn], true);
+    if ("id" in combatOrder[currentTurn]) {
+      alertPlayer(combatOrder[currentTurn].id, true);
     }
   };
 
@@ -233,21 +206,21 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
     setCurrentTurn(turn);
     setCurrentRound(round);
 
-    if ("character" in combatant) {
-      alertPlayer(combatant, true);
+    if ("id" in combatant) {
+      alertPlayer(combatant.id, true);
     }
 
     // Alerts the player that their turn is over.
-    if ("character" in prevCombatant) {
-      alertPlayer(prevCombatant, false);
+    if ("id" in prevCombatant) {
+      alertPlayer(prevCombatant.id, false);
     }
   };
 
   const nextRound = () => {
     const prevCombatant = combatOrder[currentTurn];
 
-    if ("character" in prevCombatant) {
-      alertPlayer(prevCombatant, false);
+    if ("id" in prevCombatant) {
+      alertPlayer(prevCombatant.id, false);
     }
 
     setCurrentTurn(0);
@@ -255,13 +228,13 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
 
     const combatant = combatOrder[0];
 
-    if ("character" in combatant) {
-      alertPlayer(combatant, true);
+    if ("id" in combatant) {
+      alertPlayer(combatant.id, true);
     }
   };
 
-  const alertPlayer = (sheet: CombatSheet, isTurn: boolean) => {
-    const channel = supabase.channel(`player:${sheet.character.id}`);
+  const alertPlayer = (id: string, isTurn: boolean) => {
+    const channel = supabase.channel(`player:${id}`);
     channel.send({
       type: "broadcast",
       event: "combat-turn",
@@ -275,9 +248,6 @@ export const CombatProvider = ({ children }: { children: ReactNode }) => {
       endCombat,
       nextTurn,
       nextRound,
-    },
-    setters: {
-      setPlayerOrder,
     },
     currentRound,
     currentTurn,

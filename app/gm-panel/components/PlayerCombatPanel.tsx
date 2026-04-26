@@ -2,28 +2,45 @@
 
 import { useCharacterModifiers } from "@/lib/hooks/useCharacterModifiers";
 import { GMPanelContext } from "@/lib/providers/GMPanelProvider";
-import { Combatant, CombatSheet, Stats } from "@/lib/types";
-import { getStatLabel } from "@/lib/utils";
+import { Combatant, CombatSheet, Sheet, Stats } from "@/lib/types";
 import { useContext, useEffect, useState } from "react";
 
 interface Props {
-  sheet: CombatSheet;
+  sheet: Sheet | undefined;
   updatePlayerTurnOrder: (characterId: string, newTurnOrder: number) => void;
   isTurn: boolean;
+  inCombat: boolean;
+  initiative: number;
 }
 
-const CombatPanel = ({ sheet, updatePlayerTurnOrder, isTurn }: Props) => {
-  const { setters } = useContext(GMPanelContext);
-  const { modifiers, setCharacter } = useCharacterModifiers(sheet);
+const CombatPanel = ({
+  sheet,
+  updatePlayerTurnOrder,
+  isTurn,
+  inCombat,
+  initiative,
+}: Props) => {
+  const { characters } = useContext(GMPanelContext);
+  const { modifiers, setCharacter } = useCharacterModifiers(characters[0]);
 
   useEffect(() => {
-    setCharacter(sheet);
+    const player = characters.find(({ character }) => {
+      character.id === sheet?.character.id;
+    });
+    if (player) {
+      setCharacter(player);
+    }
+    // setCharacter(sheet);
   }, [sheet]);
 
-  const { setResilienceCurrent, setResilienceReserves, setActionPoints } =
-    setters;
+  // const { setResilienceCurrent, setResilienceReserves, setActionPoints } =
+  // setters;
   const { penalties, effectiveResilience, maxResilience, maxReserves } =
     modifiers;
+
+  if (sheet === undefined) {
+    return <div></div>;
+  }
 
   return (
     <section
@@ -45,7 +62,7 @@ const CombatPanel = ({ sheet, updatePlayerTurnOrder, isTurn }: Props) => {
           Initiative
           <input
             type="number"
-            value={sheet.initiative}
+            value={initiative}
             onChange={(event) =>
               updatePlayerTurnOrder(
                 sheet.character.id,
@@ -58,40 +75,43 @@ const CombatPanel = ({ sheet, updatePlayerTurnOrder, isTurn }: Props) => {
         <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
           Resilience ({effectiveResilience} / {maxResilience})
           <input
-            type="number"
+            type="text"
             max={effectiveResilience}
             value={sheet.character.resilience_current}
-            onChange={(event) =>
-              setResilienceCurrent(
-                sheet.character.id,
-                Number(event.target.value)
-              )
-            }
+            // onChange={(event) =>
+            //   setResilienceCurrent(
+            //     sheet.character.id,
+            //     Number(event.target.value)
+            //   )
+            // }
+            disabled
             className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           />
         </label>
         <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
           Reserves ({maxReserves})
           <input
-            type="number"
+            type="text"
             value={sheet.character.resilience_reserves}
-            onChange={(event) =>
-              setResilienceReserves(
-                sheet.character.id,
-                Number(event.target.value)
-              )
-            }
+            // onChange={(event) =>
+            //   setResilienceReserves(
+            //     sheet.character.id,
+            //     Number(event.target.value)
+            //   )
+            // }
+            disabled
             className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           />
         </label>
         <label className="flex flex-col gap-2 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
           Action Points
           <input
-            type="number"
+            type="text"
             value={sheet.character.action_points}
-            onChange={(event) =>
-              setActionPoints(sheet.character.id, Number(event.target.value))
-            }
+            // onChange={(event) =>
+            //   setActionPoints(sheet.character.id, Number(event.target.value))
+            // }
+            disabled
             className="rounded-lg border border-[#5c4a33] bg-[#19130d] px-3 py-2 text-sm text-[#f0e4cf]"
           />
         </label>
