@@ -54,7 +54,7 @@ const Actions = () => {
         Action Points
       </p>
       <div className="mt-2 flex items-center gap-3">
-        {Array.from({ length: 4 }).map((_, index) => (
+        {Array.from({ length: 6 }).map((_, index) => (
           <div
             key={index}
             className={`h-4 w-4 rounded-full border border-[#8b6a3f] ${
@@ -64,7 +64,7 @@ const Actions = () => {
         ))}
       </div>
       <p className="mt-3 text-xs uppercase tracking-[0.2em] text-[#b7a387]">
-        {action_points} / 4
+        {action_points} / 6
       </p>
       <div className="mt-4 grid gap-2 text-sm text-[#f0e4cf]">
         {defaultActions.map((action, key) => (

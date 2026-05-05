@@ -53,7 +53,7 @@ export const spendAP = (
       nextAp -= 1;
       remaining -= 1;
       continue;
-    } else if (nextAp > -2) {
+    } else if (nextAp > 0) {
       nextAp -= 1;
       nextResilience -= 1;
       remaining -= 1;
