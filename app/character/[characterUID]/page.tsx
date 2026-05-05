@@ -16,9 +16,7 @@ export default async function Page({
         >
           ← Back to selection
         </a>
-        <div className="rounded-2xl border border-[#5c4a33] bg-[#19130d] p-8 shadow-[0_12px_32px_rgba(0,0,0,0.35)]">
-          <CharacterSheet characterUID={characterUID} />
-        </div>
+        <CharacterSheet characterUID={characterUID} />
       </main>
     </div>
   );
