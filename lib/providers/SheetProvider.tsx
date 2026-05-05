@@ -44,6 +44,8 @@ export const SheetContext = createContext<SheetContextType>({
       initializationError("handleApplyDamage"),
   },
   modifiers: {} as CharacterModifiers,
+  isTurn: false,
+  combatStart: false,
 });
 
 export const SheetProvider = ({ children }: { children: ReactNode }) => {
@@ -69,8 +71,12 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
             setCombatStart(true);
             break;
           case "combat-turn":
-            // Payload will be boolean
-            setIsTurn(payload);
+            setIsTurn(payload.isTurn);
+            const ap = Math.min(6, sheet.character.action_points + 4);
+            setSheet({
+              ...sheet,
+              character: { ...sheet.character, action_points: ap },
+            });
             break;
           case "combat-end":
             setCombatStart(false);
@@ -349,6 +355,8 @@ export const SheetProvider = ({ children }: { children: ReactNode }) => {
       handleApplyDamage,
     },
     modifiers,
+    isTurn,
+    combatStart,
   };
 
   return (

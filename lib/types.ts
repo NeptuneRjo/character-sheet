@@ -206,6 +206,8 @@ export type SheetContextType = {
     handleApplyDamage: (damageAmount: number, damageType: string) => void;
   };
   modifiers: CharacterModifiers;
+  isTurn: boolean;
+  combatStart: boolean;
 };
 
 export type CombatContextType = {
@@ -258,24 +260,6 @@ export type GMPanelContextType = {
 export type RequestBody<t> = {
   characterId: string;
   body: t;
-};
-
-export type CharacterContextType = {
-  penalties: CurrentPenalties | null;
-  maxResilience: number;
-  effectiveResilience: number;
-  maxReserves: number;
-  buildModifiers: BuildModifiers;
-  effectivePhysicality: number;
-  reactionPhysicalityBonus: number;
-  maxWard: number;
-  effectiveMoveSpeed: number;
-  carryCapacityKg: number;
-  hitClass: number;
-  baseDamageThreshold: number;
-  damageThresholds: DamageMaxes;
-  currentEffect: CurrentEffect;
-  setCharacter: Dispatch<SetStateAction<Sheet | undefined>>;
 };
 
 export type CharacterModifiers = {
